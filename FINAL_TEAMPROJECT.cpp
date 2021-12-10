@@ -9,39 +9,28 @@
 #include<math.h>
 #include<fstream>
 #include<string>
-#include"readTriangleObj.h"
-
+#include "filetobuf.h"
+#include "_makeshader.h"
+#include "readTriangleObj.h"
 
 #define STB_IMAGE_IMPLEMENTATION
-#include"stb_image.h"
-using namespace std;
+#include "stb_image.h"
 
-//shader func
-void makeVertexShader();
-void makeFragmentShader();
-void makeShaderID();
 void InitBuffer();
 void initTexture();
-
+using namespace std;
+unsigned int texture[10];
 //call_back
-void timer(int value);
 void MainView();
 void Resize(int w, int h);
 void keyboardCall(unsigned char key, int x, int y);
 
-
 //func
+void timer(int value);
 void drawPlane();
 void ObjList();
 void drawscene();
-void LocationSnow();
-
-GLuint fragmentShader;
-GLuint modelvertexShader;
-GLuint shaderID;
-
-char* vertexSource;
-char* fragmentSource;
+void LocationRandom();
 
 int Wwidth = 0;
 int Wheight = 0;
@@ -62,7 +51,7 @@ struct Angle
 	float angle = 0.0f;
 	float anglex = 0.0f;
 	float angley = 0.0f;
-	float AngleTrap2 = 0.0f;
+	float AngleTrap2 = 00.0f;
 	float AngleTrap = 0.0f;
 	float Radian = 0.0f;
 	//---------------------
@@ -83,6 +72,7 @@ struct Angle
 	float StageAngle = 0.0f;
 	float StageAngle2 = 0.0f;
 	float EyeAngle = 0.0f;
+	float CpaeAngle = 0.0f;
 }AngleList;
 
 
@@ -104,6 +94,10 @@ struct Scale
 	float ALx = 0.1f;
 	float ALy = 0.3f;
 	float ALz = 0.1f;
+	//---------------
+	float TSy = 0.6f;
+	//---------------
+	float Doorx = 6.0f;
 
 }Scalepos;
 
@@ -139,12 +133,16 @@ struct Transration
 	float T_Trapz = 0.0f;
 	//-----------------
 	float T_Trapx2 = 16.0f;
-	float T_Trapy2 = 1.0f;
+	float T_Trapy2 = 1.5f;
 	float T_Trapz2 = 20.0f;
 	//---------------
 	float T_Bodyx = 0.0f;
 	float T_Bodyy = 0.9f;
 	float T_Bodyz = -2.0f;
+	//--------------------
+	float T_Cpaex = 0.0f;
+	float T_Cpaey = 0.6f;
+	float T_Cpaez = -2.0f;
 	//-------------------
 	float T_Eyex = 0.0f;
 	float T_Eyey = 0.9f;
@@ -153,6 +151,9 @@ struct Transration
 	float T_ArmLegx = 0.0f;
 	float T_ArmLegy = 0.77f;
 	float T_ArmLegz = -0.0f;
+	//-------------------
+	float DoorxL = 1.8f;
+	float DoorxR = -1.8f;
 
 }TransList;
 
@@ -161,25 +162,24 @@ struct Snow {
 	float y;
 	float z;
 };
-Snow SLocation[80];
-Snow SaveLocation[80];
-Snow SnowSpeed[80];
+Snow SLocation[200];
+Snow SaveLocation[200];
+Snow SnowSpeed[200];
 
 struct Trap {
 	float x;
 	float y;
 	float z;
 };
-Trap radomcorail;
+Trap radomcorail[4];
 
+GLuint VAO[25];
+GLuint VBO[50];
 
-GLuint VAO[20];
-GLuint VBO[40];
+vector<glm::vec4> Vertex[25];
+vector<glm::vec4> Nomal[25];
+vector<glm::vec2> Texture[25];
 
-vector<glm::vec4> Vertex[15];
-vector<glm::vec4> Nomal[15];
-vector<glm::vec2> Texture[15];
-unsigned int texture[10];
 
 float snowx = 0.0f;
 float snowy = 5.8f;
@@ -196,18 +196,24 @@ int Mainswingchk = 1;
 bool MainswingAngle1 = true;
 bool MainswingAngle2 = false;
 bool TrapAction = true;
+bool Door = true;
 bool TrapHelyAction = false;
 bool JumpState = false;
+bool TrapJumpState = true;
 int jumpcheck = 0;
-glm::vec3 objC = glm::vec3(0, 0, 0);
+int trapjumpcheck = 0;
+int OPENDOOR = 0;
+int selectLightColor = 0;
+bool snowcheck = true;
 
+
+glm::vec3 objC = glm::vec3(0, 0, 0);
 glm::vec3 cameraPos = glm::vec3(1.0f, 3.0f, 8.0f);
 glm::vec3 lightPos = glm::vec3(0, 3.0f, 2.5f);
 glm::vec3 lightColor = glm::vec3(1.4f, 1.3f, 1.3f);
 glm::vec3 Cameraposdir = glm::vec3(0.0f);
 glm::vec3 Cameradir = glm::vec3(0.0f);
-float HelyTrapx[4] = { 12.0f,16.0f,22.0f,26.0f };
-float HelyTrapz[4] = { 18.0f,26.0f,18.0f,26.0f };
+
 
 glm::vec3 lightColorKind[4] = {
 	glm::vec3(0.7f, 0.7f, 0.7f),
@@ -215,7 +221,54 @@ glm::vec3 lightColorKind[4] = {
 	glm::vec3(0,1,0),
 	glm::vec3(0,0,1)
 };
-int selectLightColor = 0;
+
+
+void LocationRandom() {
+	for (int i = 0; i < 80; i++) {
+		random_device rd;
+		default_random_engine dre(rd());
+		uniform_real_distribution<>ScaleXZ(-15.0, 22.0);
+		uniform_real_distribution<>LoctionY(0.0, 7.0);
+		uniform_real_distribution<>Speed(0.02, 0.05);
+
+		float Sx = ScaleXZ(dre);
+		float Sz = ScaleXZ(dre);
+		float Sy = LoctionY(dre);
+		float SpeedY = Speed(dre);
+
+
+		SLocation[i].x = Sx;
+		SLocation[i].y = Sy;
+		SLocation[i].z = Sz;
+
+		SaveLocation[i].x = Sx;
+		SaveLocation[i].y = Sy;
+		SaveLocation[i].z = Sz;
+
+		SnowSpeed[i].y = SpeedY;
+	}
+
+	for (int i = 0; i < 4; i++)
+	{
+		random_device rdx;
+		random_device rdz;
+		default_random_engine drex(rdx());
+		default_random_engine drez(rdz());
+		uniform_int_distribution<>Random(-4, 5);
+		uniform_real_distribution<>RandomY(0, 0.05);
+		float RX = Random(drex);
+		float RZ = Random(drez);
+		float RY = RandomY(drez);
+	
+		radomcorail[i].x = RX;
+		radomcorail[i].z = RZ;
+		radomcorail[i].y = 1.0f;
+
+	}
+}
+
+float HelyTrapx[7] = { 12.0f,16.0f,22.0f,24.0f,18.0f,8.0f,10.0f };
+float HelyTrapz[7] = { 20.0f,17.0f,16.0f,18.0f,15.0f,19.0f,14.0f };
 
 
 int main(int argc, char** argv)
@@ -224,24 +277,25 @@ int main(int argc, char** argv)
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
 	glutInitWindowPosition(0, 0);
 	glutInitWindowSize(Wwidth, Wheight);
-	glutCreateWindow("texture example");
+	glutCreateWindow("TeamProject");
 
 	glewExperimental = GL_TRUE;
 	if (glewInit() != GLEW_OK)
 		cerr << "fail Initialize" << endl;
 	else cout << "Initialize" << endl;
-	LocationSnow();
-	makeShaderID();
 	ObjList();
+
+	makeShaderID();
 	InitBuffer();
 	initTexture();
+	LocationRandom();
 	glutDisplayFunc(MainView);
 	glutReshapeFunc(Resize);
 	glutKeyboardFunc(keyboardCall);
 	glutTimerFunc(1, timer, 1);
 	glutMainLoop();
 }
-bool snowcheck = true;
+
 void timer(int value)
 {
 	if (ScreenRotate)
@@ -271,15 +325,12 @@ void timer(int value)
 		{
 
 			Scalepos.My = 0.0f;
-
 			TransList.T_Bodyy += 0.05f;
 			TransList.T_ArmLegy += 0.05f;
 			TransList.T_Eyey += 0.05f;
 			if (TransList.T_Bodyy >= 1.6f)
 			{
-				TransList.T_Bodyy -= 0.05f;
-				TransList.T_ArmLegy -= 0.05f;
-				TransList.T_Eyey -= 0.05f;
+
 				jumpcheck = 1;
 			}
 		}
@@ -294,15 +345,50 @@ void timer(int value)
 			{
 				Scalepos.My += 0.005f;
 			}
-			if (TransList.T_Bodyy < 0.7f)
+
+			if (TransList.T_Bodyy <= 0.7f)
 			{
-				TransList.T_Bodyy += 0.05f;
-				TransList.T_ArmLegy += 0.05f;
-				TransList.T_Eyey += 0.05f;
 				jumpcheck = 0;
 
 			}
 
+		}
+
+
+	}
+
+	if (TrapJumpState == true)
+	{
+		for (size_t i = 0; i < 4; i++)
+		{
+
+			if (trapjumpcheck == 0)
+			{
+
+				radomcorail[0].y += 0.004f;
+				radomcorail[1].y += 0.008f;
+				radomcorail[2].y += 0.005f;
+				radomcorail[3].y += 0.01f;
+				if (radomcorail[i].y > 2.3234f)
+				{
+
+					trapjumpcheck = 1;
+				}
+			}
+			if (trapjumpcheck == 1)
+			{
+				radomcorail[0].y -= 0.004f;
+				radomcorail[1].y -= 0.008f;
+				radomcorail[2].y -= 0.005f;
+				radomcorail[3].y -= 0.01f;
+				if (radomcorail[i].y < 0.7f)
+				{
+
+					trapjumpcheck = 0;
+
+				}
+
+			}
 		}
 
 
@@ -342,28 +428,77 @@ void timer(int value)
 
 	if (TrapAction == true)
 	{
+
 		AngleList.AngleTrap -= 5.0f;
-		TransList.T_Trapz -= 0.03f;
-		if (TransList.T_Trapz + 16.0f < -6.0f)
+		for (int i = 0; i < 5; i++)
 		{
-			TransList.T_Trapz = 0.0f;
-			TransList.T_Trapx = radomcorail.x;
+			radomcorail[i].z -= 0.03f;
+
+			if (radomcorail[i].z + 16.0f < -6.0f)
+			{
+				radomcorail[i].z = 0.0f;
+			}
 
 		}
+
 	}
 
-
-
-	if (TransList.T_Bodyz >= 18.0f)
+	if (TransList.T_Bodyz >= 15.0f)
 	{
 		TrapHelyAction = true;
 	}
 	if (TrapHelyAction == true)
 	{
-		AngleList.AngleTrap2 += 16.23234f;
+		AngleList.AngleTrap2 += 60.23234f;
 	}
 
 
+	
+	if (Door == true)
+	{
+
+		TransList.DoorxL += 0.01f;
+		TransList.DoorxR -= 0.01f;
+		Scalepos.Doorx -= 0.02f;
+		if (TransList.DoorxR <= -3.0f && TransList.DoorxL >= 3.0f)
+		{
+			TransList.DoorxL -= 0.01f;
+			TransList.DoorxR += 0.01f;
+			Scalepos.Doorx += 0.02f;
+			Door = false;
+		}
+
+	}
+
+
+	if (Door == false)
+	{
+		TransList.DoorxL -= 0.01f;
+		TransList.DoorxR += 0.01f;
+		Scalepos.Doorx += 0.02f;
+		if (TransList.DoorxR >= -2.1f && TransList.DoorxL <= 2.1f)
+		{
+			TransList.DoorxL += 0.01f;
+			TransList.DoorxR -= 0.01f;
+			Scalepos.Doorx -= 0.02f;
+			Door = true;
+		}
+
+	}
+	
+
+	AngleList.Radian += 20.234f;
+	
+	if ((TransList.T_Bodyx >= TransList.T_StageX + 5.0f || TransList.T_Bodyx <= TransList.T_StageX - 5.0f) &&
+		(TransList.T_Bodyz <= TransList.T_StageZ || TransList.T_Bodyz >= TransList.T_StageZ + 30.0f)
+		/*||
+	//	(TransList.T_Bodyx >= TransList.T_StageX + 24.0f && TransList.T_Bodyx <= TransList.T_StageX - 10.0f&&
+	//		(TransList.T_Bodyz <= TransList.T_StageZ + 14.0f && TransList.T_Bodyz <= TransList.T_StageZ + 30.0f))*/)
+	{
+		TransList.T_Bodyy -= 0.2f;
+		TransList.T_ArmLegy -= 0.2f;
+		TransList.T_Eyey -= 0.2f;
+	}
 	glutPostRedisplay();
 	glutTimerFunc(17, timer, value);
 }
@@ -468,36 +603,38 @@ void keyboardCall(unsigned char key, int x, int y)
 		Mainswingchk = 1;
 		AngleList.BodyAngle = 0.0f;
 		AngleList.LegAngle = 0.0f;
-		TransList.T_Eyez += 0.06f;
-		TransList.T_Bodyz += 0.06f;
-		TransList.T_ArmLegz += 0.06f;
+		TransList.T_Eyez += 0.08f;
+		TransList.T_Bodyz += 0.08f;
+		TransList.T_ArmLegz += 0.08f;
+		TransList.T_Cpaez -= 0.08f;
 		break;
 
 	case's':
 		Mainswingchk = 1;
 		AngleList.BodyAngle = 180.0f;
 		AngleList.LegAngle = 0.0f;
-		TransList.T_Eyez -= 0.06f;
-		TransList.T_Bodyz -= 0.06f;
-		TransList.T_ArmLegz -= 0.06f;
+		TransList.T_Eyez -= 0.08f;
+		TransList.T_Bodyz -= 0.08f;
+		TransList.T_ArmLegz -= 0.08f;
+		TransList.T_Cpaez -= 0.08f;
 		break;
 
 	case'a':
 		Mainswingchk = 2;
 		AngleList.BodyAngle = 90.0f;
 		AngleList.LegAngle = 180.0f;
-		TransList.T_Eyex += 0.06f;
-		TransList.T_Bodyx += 0.06f;
-		TransList.T_ArmLegx += 0.06f;
+		TransList.T_Eyex += 0.08f;
+		TransList.T_Bodyx += 0.08f;
+		TransList.T_ArmLegx += 0.08f;
 		break;
 
 	case'd':
 		Mainswingchk = 2;
 		AngleList.BodyAngle = 270.0f;
 		AngleList.LegAngle = 180.0f;
-		TransList.T_Eyex -= 0.06f;
-		TransList.T_Bodyx -= 0.06f;
-		TransList.T_ArmLegx -= 0.06f;
+		TransList.T_Eyex -= 0.08f;
+		TransList.T_Bodyx -= 0.08f;
+		TransList.T_ArmLegx -= 0.08f;
 		break;
 
 	case'z':
@@ -546,113 +683,12 @@ void keyboardCall(unsigned char key, int x, int y)
 }
 
 
-char* filetobuf(const string name)
-{
-	vector<char> tempFile;
-	ifstream in(name, ios::binary);
-	char temp;
-	while (true) {
-		noskipws(in);
-		in >> temp;
-		if (in.eof()) {
-			tempFile.push_back(0);
-			break;
-		}
-		else
-			tempFile.push_back(temp);
-	}
-	char* addr = new char[tempFile.size()];
-	for (int i = 0; i < tempFile.size(); i++) {
-		addr[i] = tempFile[i];
-	}
-	return addr;
-}
 
-void makeVertexShader()
-{
-	vertexSource = filetobuf("VertexTextureShader.glsl");
-	modelvertexShader = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(modelvertexShader, 1, &vertexSource, NULL);
-	glCompileShader(modelvertexShader);
 
-	GLint result;
-	GLchar errorLog[512];
-	glGetShaderiv(modelvertexShader, GL_COMPILE_STATUS, &result);
-	if (!result) {
-		glGetShaderInfoLog(modelvertexShader, 512, NULL, errorLog);
-		cerr << "VERTEXSHADER ERROR: " << errorLog << endl;
-	}
-}
-
-void makeFragmentShader()
-{
-	fragmentSource = filetobuf("fragmentBlendShader.glsl");
-	fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragmentShader, 1, &fragmentSource, NULL);
-	glCompileShader(fragmentShader);
-
-	GLint result;
-	GLchar errorLog[512];
-	glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &result);
-	if (!result) {
-		glGetShaderInfoLog(fragmentShader, 512, NULL, errorLog);
-		cerr << "FRAGMENT SHADER ERROR: " << errorLog << endl;
-	}
-}
-
-void makeShaderID()
-{
-	makeVertexShader();
-	makeFragmentShader();
-
-	shaderID = glCreateProgram();
-
-	glAttachShader(shaderID, modelvertexShader);
-	glAttachShader(shaderID, fragmentShader);
-
-	glLinkProgram(shaderID);
-	GLint result;
-	glGetProgramiv(shaderID, GL_LINK_STATUS, &result);
-	GLchar errorLog[512];
-	if (!result) {
-		glGetProgramInfoLog(shaderID, 512, NULL, errorLog);
-		cerr << "ShaderID0 Program ERROR: " << errorLog << endl;
-	}
-
-	glDeleteShader(modelvertexShader);
-	glDeleteShader(fragmentShader);
-	glUseProgram(shaderID);
-}
-void LocationSnow() {
-	for (int i = 0; i < 80; i++) {
-		random_device rd;
-		default_random_engine dre(rd());
-		uniform_real_distribution<>ScaleXZ(-6.0, 6.0);
-		uniform_real_distribution<>LoctionY(0.0, 7.0);
-		uniform_real_distribution<>Speed(0.02, 0.05);
-		uniform_real_distribution<>RandomX(-4.0, 4.0);
-		float Sx = ScaleXZ(dre);
-		float Sz = ScaleXZ(dre);
-		float Sy = LoctionY(dre);
-		float SpeedY = Speed(dre);
-		float RX = RandomX(dre);
-
-		radomcorail.x = RX;
-		SLocation[i].x = Sx;
-		SLocation[i].y = Sy;
-		SLocation[i].z = Sz;
-
-		SaveLocation[i].x = Sx;
-		SaveLocation[i].y = Sy;
-		SaveLocation[i].z = Sz;
-
-		SnowSpeed[i].y = SpeedY;
-	}
-}
 
 void InitBuffer()
 {
-	glGenVertexArrays(16, VAO);
+	glGenVertexArrays(20, VAO);
 
 	glBindVertexArray(VAO[0]);
 	glGenBuffers(3, &VBO[0]);
@@ -688,7 +724,7 @@ void InitBuffer()
 
 	}
 
-	for (int i = 5; i < 15; i++)
+	for (int i = 5; i < 20; i++)
 	{
 		glBindVertexArray(VAO[i]);
 		glGenBuffers(3, &VBO[3 * i]);
@@ -724,21 +760,25 @@ void ObjList()
 	{
 		readTriangleObj("Sphere2.obj", Vertex[i], Texture[i], Nomal[i]);
 	}
-	for (int i = 10; i < 15; i++)
+	for (int i = 10; i < 13; i++)
 	{
 		readTriangleObj("Sphere2.obj", Vertex[i], Texture[i], Nomal[i]);
 	}
 
-
-
-
+	readTriangleObj("sex.obj", Vertex[13], Texture[13], Nomal[13]);
+	readTriangleObj("sex.obj", Vertex[14], Texture[14], Nomal[14]);
+	readTriangleObj("cube3_.obj", Vertex[15], Texture[15], Nomal[15]);
+	readTriangleObj("cube3_.obj", Vertex[16], Texture[16], Nomal[16]);
+	readTriangleObj("sex.obj", Vertex[17], Texture[17], Nomal[17]);
+	readTriangleObj("crown.obj", Vertex[18], Texture[18], Nomal[18]);
+	readTriangleObj("sword.obj", Vertex[19], Texture[19], Nomal[19]);
 }
 
 void drawscene()
 {
 	glUseProgram(shaderID);
 
-	for (int i = 0; i < 80; i++)
+	for (int i = 0; i < 200; i++)
 	{
 		glBindVertexArray(VAO[3]);
 		unsigned int snowBlendCheck = glGetUniformLocation(shaderID, "Blendcheck");
@@ -768,7 +808,7 @@ void drawscene()
 	glBindTexture(GL_TEXTURE_2D, texture[4]);
 	glUniform1i(glGetUniformLocation(shaderID, "textureC"), 0);
 	glm::mat4 StageTrasMatrix = glm::mat4(1.0f);
-	StageTrasMatrix = glm::translate(StageTrasMatrix, glm::vec3(TransList.T_StageX + 17.0f, TransList.T_StageY, TransList.T_StageZ + 20.0f));
+	StageTrasMatrix = glm::translate(StageTrasMatrix, glm::vec3(TransList.T_StageX + 17.0f, TransList.T_StageY, TransList.T_StageZ + 18.0f));
 	StageTrasMatrix = glm::rotate(StageTrasMatrix, glm::radians(AngleList.StageAngle), glm::vec3(0.0f, 1.0f, 0.0f));
 	StageTrasMatrix = glm::scale(StageTrasMatrix, glm::vec3(24.0, 1.0, 10.0));
 	unsigned int StageTransMatrixLocation = glGetUniformLocation(shaderID, "modelTransform");
@@ -785,7 +825,7 @@ void drawscene()
 	glBindTexture(GL_TEXTURE_2D, texture[4]);
 	glUniform1i(glGetUniformLocation(shaderID, "textureC"), 0);
 	glm::mat4 Stage2TrasMatrix = glm::mat4(1.0f);
-	Stage2TrasMatrix = glm::translate(Stage2TrasMatrix, glm::vec3(TransList.T_StageX, TransList.T_StageY, TransList.T_StageZ + 10.0f));
+	Stage2TrasMatrix = glm::translate(Stage2TrasMatrix, glm::vec3(TransList.T_StageX, TransList.T_StageY, TransList.T_StageZ + 8.0f));
 	Stage2TrasMatrix = glm::rotate(Stage2TrasMatrix, glm::radians(AngleList.StageAngle2), glm::vec3(0.0f, 1.0f, 0.0f));
 	Stage2TrasMatrix = glm::scale(Stage2TrasMatrix, glm::vec3(10.0, 1.0, 30.0f));
 	unsigned int Stage2TransMatrixLocation = glGetUniformLocation(shaderID, "modelTransform");
@@ -794,6 +834,47 @@ void drawscene()
 	unsigned int Stage2NormalMatrixLocation = glGetUniformLocation(shaderID, "normalTransform");
 	glUniformMatrix4fv(Stage2NormalMatrixLocation, 1, GL_FALSE, glm::value_ptr(Stage2NormalMatrix));
 	glDrawArrays(GL_TRIANGLES, 0, Vertex[9].size());
+
+	glBindVertexArray(VAO[15]);
+	unsigned int DoorBlendCheck = glGetUniformLocation(shaderID, "Blendcheck");
+	glUniform1i(DoorBlendCheck, 2);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, texture[4]);
+	glUniform1i(glGetUniformLocation(shaderID, "textureC"), 0);
+	glm::mat4 DoorTrasMatrix = glm::mat4(1.0f);
+	DoorTrasMatrix = glm::translate(DoorTrasMatrix, glm::vec3(TransList.DoorxL + 0.5f, TransList.T_StageY, TransList.T_StageZ + 14.0f));
+	DoorTrasMatrix = glm::scale(DoorTrasMatrix, glm::vec3(Scalepos.Doorx, 4.0, 1.0f));
+	unsigned int DoorTransMatrixLocation = glGetUniformLocation(shaderID, "modelTransform");
+	glUniformMatrix4fv(DoorTransMatrixLocation, 1, GL_FALSE, glm::value_ptr(DoorTrasMatrix));
+	glm::mat4 DoorNormalMatrix = glm::mat4(1.0f);
+	unsigned int DoorNormalMatrixLocation = glGetUniformLocation(shaderID, "normalTransform");
+	glUniformMatrix4fv(DoorNormalMatrixLocation, 1, GL_FALSE, glm::value_ptr(DoorNormalMatrix));
+	glDrawArrays(GL_TRIANGLES, 0, Vertex[15].size());
+
+	glBindVertexArray(VAO[16]);
+	unsigned int Door2BlendCheck = glGetUniformLocation(shaderID, "Blendcheck");
+	glUniform1i(Door2BlendCheck, 2);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, texture[4]);
+	glUniform1i(glGetUniformLocation(shaderID, "textureC"), 0);
+	glm::mat4 Door2TrasMatrix = glm::mat4(1.0f);
+	Door2TrasMatrix = glm::translate(Door2TrasMatrix, glm::vec3(TransList.DoorxR - 0.5f, TransList.T_StageY, TransList.T_StageZ + 14.0f));
+	Door2TrasMatrix = glm::scale(Door2TrasMatrix, glm::vec3(Scalepos.Doorx, 4.0, 1.0f));
+	unsigned int Door2TransMatrixLocation = glGetUniformLocation(shaderID, "modelTransform");
+	glUniformMatrix4fv(Door2TransMatrixLocation, 1, GL_FALSE, glm::value_ptr(Door2TrasMatrix));
+	glm::mat4 Door2NormalMatrix = glm::mat4(1.0f);
+	unsigned int Door2NormalMatrixLocation = glGetUniformLocation(shaderID, "normalTransform");
+	glUniformMatrix4fv(Door2NormalMatrixLocation, 1, GL_FALSE, glm::value_ptr(Door2NormalMatrix));
+	glDrawArrays(GL_TRIANGLES, 0, Vertex[16].size());
+
+
+	if ((TransList.DoorxR + 2.0f >= TransList.T_Bodyx && (TransList.T_StageZ + 14.0f) - 1.0f <= TransList.T_Bodyz && (TransList.T_StageZ + 14.0f) + 1.0f >= TransList.T_Bodyz)
+		|| (TransList.DoorxL - 2.0f <= TransList.T_Bodyx && (TransList.T_StageZ + 14.0f) - 1.0f <= TransList.T_Bodyz && (TransList.T_StageZ + 14.0f) + 1.0f >= TransList.T_Bodyz))
+	{
+		TransList.T_Bodyz -= 0.05f;
+		TransList.T_ArmLegz -= 0.05f;
+		TransList.T_Eyez -= 0.05f;
+	}
 
 
 	//·Îº¿ ¸öÅë & ¸Ó¸® 
@@ -971,10 +1052,44 @@ void drawscene()
 	glUniform3f(EYEfragLocation2, 0.0f, 0.0f, 0.0f);
 	glDrawArrays(GL_TRIANGLES, 0, Vertex[11].size());
 
+	glBindVertexArray(VAO[18]);
+	unsigned int ClownBlendCheck = glGetUniformLocation(shaderID, "Blendcheck");
+	glUniform1i(ClownBlendCheck, 0);
+	glm::mat4 Clown = glm::mat4(1.0f);
+	Clown = glm::translate(Clown, glm::vec3(TransList.T_Bodyx, TransList.T_Bodyy + 0.1f, TransList.T_Bodyz));
+	Clown = glm::rotate(Clown, glm::radians(AngleList.BodyAngle), glm::vec3(0.0f, 1.0f, 0.0f));
+	Clown = glm::scale(Clown, glm::vec3(3.0f, Scalepos.My + 3.0f, 3.0f));
+	unsigned int ClownLocation = glGetUniformLocation(shaderID, "modelTransform");
+	glUniformMatrix4fv(ClownLocation, 1, GL_FALSE, glm::value_ptr(Clown));
+	glm::mat4 ClownNormal = glm::mat4(1.0f);
+	ClownNormal = glm::rotate(ClownNormal, glm::radians(AngleList.angle), glm::vec3(0.0f, 1.0f, 0.0f));
+	unsigned int ClownNormalLocation = glGetUniformLocation(shaderID, "normalTransform");
+	glUniformMatrix4fv(ClownNormalLocation, 1, GL_FALSE, glm::value_ptr(ClownNormal));
+	unsigned int ClownfragLocation = glGetUniformLocation(shaderID, "objColor");
+	glUniform3f(ClownfragLocation, 0.980392	,0.980392,	0.823529);
+	glDrawArrays(GL_TRIANGLES, 0, Vertex[18].size());
+
+	//-------Blank VAO
+	glBindVertexArray(VAO[19]);
+	unsigned int CapeBlendCheck = glGetUniformLocation(shaderID, "Blendcheck");
+	glUniform1i(CapeBlendCheck, 0);
+
+	glm::mat4 Cape = glm::mat4(1.0f);
+	Cape = glm::translate(Cape, glm::vec3(TransList.T_Bodyx, TransList.T_Bodyy + 1.1f, TransList.T_Bodyz));
+	Cape = glm::rotate(Cape, glm::radians(AngleList.BodyAngle), glm::vec3(0.0f, 1.0f, 0.0f));
+	Cape = glm::scale(Cape, glm::vec3(3.0f, 3.0f, 3.5f));
+	unsigned int CapeLocation = glGetUniformLocation(shaderID, "modelTransform");
+	glUniformMatrix4fv(CapeLocation, 1, GL_FALSE, glm::value_ptr(Cape));
+	glm::mat4 CapeNormal = glm::mat4(1.0f);
+	CapeNormal = glm::rotate(CapeNormal, glm::radians(AngleList.angle), glm::vec3(0.0f, 1.0f, 0.0f));
+	unsigned int CapeNormalLocation = glGetUniformLocation(shaderID, "normalTransform");
+	glUniformMatrix4fv(CapeNormalLocation, 1, GL_FALSE, glm::value_ptr(CapeNormal));
+	
+	glDrawArrays(GL_TRIANGLES, 0, Vertex[19].size());
+
 	//--------------TRAP
 	for (int i = 0; i < 4; i++)
 	{
-
 
 		glBindVertexArray(VAO[12]);
 		unsigned int RECOILBlendCheck = glGetUniformLocation(shaderID, "Blendcheck");
@@ -982,9 +1097,9 @@ void drawscene()
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, texture[1]);
 		glm::mat4 RECOIL = glm::mat4(1.0f);
-		RECOIL = glm::translate(RECOIL, glm::vec3(TransList.T_Trapx, TransList.T_Trapy, TransList.T_Trapz + 16.0));
+		RECOIL = glm::translate(RECOIL, glm::vec3(radomcorail[i].x, radomcorail[i].y, radomcorail[i].z + 16.0));
 		RECOIL = glm::rotate(RECOIL, glm::radians(AngleList.AngleTrap), glm::vec3(1.0f, 0.0f, 0.0f));
-		RECOIL = glm::scale(RECOIL, glm::vec3(0.6f, 0.6f, 0.6f));
+		RECOIL = glm::scale(RECOIL, glm::vec3(0.6f, Scalepos.TSy, 0.6f));
 		unsigned int RECOILLocation = glGetUniformLocation(shaderID, "modelTransform");
 		glUniformMatrix4fv(RECOILLocation, 1, GL_FALSE, glm::value_ptr(RECOIL));
 		glm::mat4 RECOILNormal = glm::mat4(1.0f);
@@ -994,7 +1109,7 @@ void drawscene()
 		unsigned int RECOILfragLocation = glGetUniformLocation(shaderID, "objColor");
 		glUniform3f(RECOILfragLocation, 0.6f, 0.45f, 0.65f);
 		glDrawArrays(GL_TRIANGLES, 0, Vertex[12].size());
-		if ((TransList.T_Trapz + 16.0f) - 0.6f <= TransList.T_Bodyz && (TransList.T_Trapz + 16.0f) + 0.6f >= TransList.T_Bodyz && TransList.T_Trapx + 0.6 >= TransList.T_Bodyx && TransList.T_Trapx - 0.6 <= TransList.T_Bodyx)
+		if ((radomcorail[i].z + 16.0f) - 0.6f <= TransList.T_Bodyz && (radomcorail[i].z + 16.0f) + 0.6f >= TransList.T_Bodyz && radomcorail[i].x + 0.6 >= TransList.T_Bodyx && radomcorail[i].x - 0.6 <= TransList.T_Bodyx)
 		{
 			TransList.T_Bodyz -= 0.2f;
 			TransList.T_ArmLegz -= 0.2f;
@@ -1002,29 +1117,35 @@ void drawscene()
 		}
 	}
 
-	for (int i = 0; i < 4; i++)
+	for (int i = 0; i < 7; i++)
 	{
 		glBindVertexArray(VAO[13]);
 		unsigned int HELYCOPBlendCheck = glGetUniformLocation(shaderID, "Blendcheck");
 		glUniform1i(HELYCOPBlendCheck, 2);
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, texture[2]);
+		glBindTexture(GL_TEXTURE_2D, texture[3]);
 		glUniform1i(glGetUniformLocation(shaderID, "textureC"), 0);
 		glm::mat4 HELYCOP = glm::mat4(1.0f);
-		HELYCOP = glm::translate(HELYCOP, glm::vec3(HelyTrapx[i], TransList.T_Trapy2, HelyTrapz[i]));
-		HELYCOP = glm::rotate(HELYCOP, glm::radians(AngleList.AngleTrap2), glm::vec3(1.0f, 0.0f, 0.0f));
-		HELYCOP = glm::scale(HELYCOP, glm::vec3(0.15f, 0.15f, 2.0f));
+		HELYCOP = glm::translate(HELYCOP, glm::vec3(HelyTrapx[i], TransList.T_Trapy2, HelyTrapz[i]+0.2f));
+		HELYCOP = glm::rotate(HELYCOP, glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+		HELYCOP = glm::rotate(HELYCOP, glm::radians(AngleList.AngleTrap2), glm::vec3(0.0f, 1.0f, 0.0f));
+		HELYCOP = glm::scale(HELYCOP, glm::vec3(2.0f, 2.0f, 2.0f));
 		unsigned int HELYCOPLocation = glGetUniformLocation(shaderID, "modelTransform");
 		glUniformMatrix4fv(HELYCOPLocation, 1, GL_FALSE, glm::value_ptr(HELYCOP));
 		glm::mat4 HELYCOPNormal = glm::mat4(1.0f);
-		HELYCOPNormal = glm::rotate(HELYCOPNormal, glm::radians(AngleList.angle), glm::vec3(0.0f, 1.0f, 0.0f));
+		HELYCOPNormal = glm::rotate(HELYCOPNormal, glm::radians(AngleList.angle), glm::vec3(0.0f, 0.0f, 1.0f));
 		unsigned int HELYCOPNormalLocation = glGetUniformLocation(shaderID, "normalTransform");
 		glUniformMatrix4fv(HELYCOPNormalLocation, 1, GL_FALSE, glm::value_ptr(HELYCOPNormal));
 		glDrawArrays(GL_TRIANGLES, 0, Vertex[13].size());
 		glBindVertexArray(VAO[14]);
+		unsigned int HELYCOPBlendCheck2 = glGetUniformLocation(shaderID, "Blendcheck");
+		glUniform1i(HELYCOPBlendCheck2, 2);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, texture[3]);
 		glm::mat4 HELYCOPROW = glm::mat4(1.0f);
 		HELYCOPROW = glm::translate(HELYCOPROW, glm::vec3(HelyTrapx[i], TransList.T_Trapy2, HelyTrapz[i]));
-		HELYCOPROW = glm::rotate(HELYCOPROW, glm::radians(AngleList.AngleTrap2 + 45.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+		HELYCOPROW = glm::rotate(HELYCOPROW, glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+		HELYCOPROW = glm::rotate(HELYCOPROW, glm::radians(AngleList.AngleTrap2), glm::vec3(0.0f, 1.0f, 0.0f));
 		HELYCOPROW = glm::scale(HELYCOPROW, glm::vec3(0.15f, 0.15f, 2.0f));
 		unsigned int HELYCOPROWLocation = glGetUniformLocation(shaderID, "modelTransform");
 		glUniformMatrix4fv(HELYCOPROWLocation, 1, GL_FALSE, glm::value_ptr(HELYCOPROW));
@@ -1033,7 +1154,7 @@ void drawscene()
 		unsigned int HELYCOPROWNormalLocation = glGetUniformLocation(shaderID, "normalTransform");
 		glUniformMatrix4fv(HELYCOPROWNormalLocation, 1, GL_FALSE, glm::value_ptr(HELYCOPROWNormal));
 		glDrawArrays(GL_TRIANGLES, 0, Vertex[14].size());
-		if (TransList.T_Bodyx > HelyTrapx[i] - 2.0f && HelyTrapz[i] - 1.0 < TransList.T_Bodyz && HelyTrapz[i] + 1.0 > TransList.T_Bodyz)
+		if (TransList.T_Bodyx >= HelyTrapx[i] - 2.0f && TransList.T_Bodyx <= HelyTrapx[i] + 0.5f && HelyTrapz[i] - 1.5 <= TransList.T_Bodyz && HelyTrapz[i] + 1.5 >= TransList.T_Bodyz)
 		{
 			TransList.T_Bodyx -= 0.02f;
 			TransList.T_ArmLegx -= 0.02f;
@@ -1041,8 +1162,27 @@ void drawscene()
 		}
 	}
 
+	glBindVertexArray(VAO[17]);
+	unsigned int FlagBlendCheck = glGetUniformLocation(shaderID, "Blendcheck");
+	glUniform1i(FlagBlendCheck, 2);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, texture[3]);
+	glUniform1i(glGetUniformLocation(shaderID, "textureC"), 0);
+	glm::mat4 FlagTrasMatrix = glm::mat4(1.0f);
+	FlagTrasMatrix = glm::translate(FlagTrasMatrix, glm::vec3(TransList.T_StageX+28.0, TransList.T_StageY, TransList.T_StageZ+21.0f));
+	FlagTrasMatrix = glm::rotate(FlagTrasMatrix, glm::radians(AngleList.Radian), glm::vec3(0.0f, 1.0f, 0.0f));
+	FlagTrasMatrix = glm::scale(FlagTrasMatrix, glm::vec3(1.0f, 1.0, 1.0f));
+	unsigned int FlagTransMatrixLocation = glGetUniformLocation(shaderID, "modelTransform");
+	glUniformMatrix4fv(FlagTransMatrixLocation, 1, GL_FALSE, glm::value_ptr(FlagTrasMatrix));
+	glm::mat4 FlagNormalMatrix = glm::mat4(1.0f);
+	unsigned int FlagNormalMatrixLocation = glGetUniformLocation(shaderID, "normalTransform");
+	glUniformMatrix4fv(FlagNormalMatrixLocation, 1, GL_FALSE, glm::value_ptr(FlagNormalMatrix));
+	glDrawArrays(GL_TRIANGLES, 0, Vertex[17].size());
 
+	
 }
+
+
 void initTexture()
 {
 
@@ -1075,7 +1215,7 @@ void initTexture()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	int BackwidthImage, BackheightImage, BacknumberOfChannel;
-	unsigned char* Backdata = stbi_load("Hely.jpg", &BackwidthImage, &BackheightImage, &BacknumberOfChannel, 0);
+	unsigned char* Backdata = stbi_load("FireHely.jpg", &BackwidthImage, &BackheightImage, &BacknumberOfChannel, 0);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, BackwidthImage, BackheightImage, 0, GL_RGB, GL_UNSIGNED_BYTE, Backdata);
 	glGenerateMipmap(GL_TEXTURE_2D);
 	stbi_image_free(Backdata);
@@ -1086,7 +1226,7 @@ void initTexture()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	int TrapwidthImage, TrapheightImage, TrapnumberOfChannel;
-	unsigned char* Trap = stbi_load("Hely.jpg", &TrapwidthImage, &TrapheightImage, &TrapnumberOfChannel, 0);
+	unsigned char* Trap = stbi_load("Helycain.jpg", &TrapwidthImage, &TrapheightImage, &TrapnumberOfChannel, 0);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, TrapwidthImage, TrapheightImage, 0, GL_RGB, GL_UNSIGNED_BYTE, Trap);
 	glGenerateMipmap(GL_TEXTURE_2D);
 	stbi_image_free(Trap);
