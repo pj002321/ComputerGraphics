@@ -1,5 +1,5 @@
-#include<gl/glew.h>
-#include<gl/freeglut.h>
+#include<glew.h>
+#include<freeglut.h>
 #include<glm/glm/glm.hpp>
 #include<glm/glm/ext.hpp>
 #include<glm/glm/gtc/matrix_transform.hpp>
@@ -112,6 +112,10 @@ struct Transration
 	float T_StageY = 0.0f;
 	float T_StageZ = 0.0f;
 	//----------------
+	float T_Stage2X = 0.0f;
+	float T_Stage2Y = 0.0f;
+	float T_Stage2Z = 0.0f;
+	//----------------
 	float T_Trapx = 0.0f;
 	float T_Trapy = 0.6f;
 	float T_Trapz = 0.0f;
@@ -155,10 +159,10 @@ struct Trap {
 	float y;
 	float z;
 };
-Trap radomcorail[4];
+Trap radomcorail[6];
 
-GLuint VAO[25];
-GLuint VBO[50];
+GLuint VAO[30];
+GLuint VBO[90];
 
 vector<glm::vec4> Vertex[25];
 vector<glm::vec4> Nomal[25];
@@ -181,12 +185,13 @@ bool MainswingAngle1 = true;
 bool MainswingAngle2 = false;
 bool TrapAction = true;
 bool Door = true;
+bool Opencheck = true;
 bool TrapHelyAction = false;
 bool JumpState = false;
 bool TrapJumpState = true;
 int jumpcheck = 0;
 int trapjumpcheck = 0;
-int OPENDOOR = 0;
+
 int selectLightColor = 0;
 bool snowcheck = true;
 
@@ -197,7 +202,7 @@ glm::vec3 lightPos = glm::vec3(0, 3.0f, 2.5f);
 glm::vec3 lightColor = glm::vec3(1.4f, 1.3f, 1.3f);
 glm::vec3 Cameraposdir = glm::vec3(0.0f);
 glm::vec3 Cameradir = glm::vec3(0.0f);
-
+float Movevalue = 0.2f;
 
 glm::vec3 lightColorKind[4] = {
 	glm::vec3(0.7f, 0.7f, 0.7f),
@@ -232,7 +237,7 @@ void LocationRandom() {
 		SnowSpeed[i].y = SpeedY;
 	}
 
-	for (int i = 0; i < 4; i++)
+	for (int i = 0; i < 6; i++)
 	{
 		random_device rdx;
 		random_device rdz;
@@ -253,7 +258,8 @@ void LocationRandom() {
 
 float HelyTrapx[7] = { 12.0f,16.0f,22.0f,24.0f,18.0f,8.0f,10.0f };
 float HelyTrapz[7] = { 20.0f,17.0f,16.0f,18.0f,15.0f,19.0f,14.0f };
-
+float Potalx[3] = {28.0,-4.0};
+float Potalz[3] = {21.0,30.0};
 
 int main(int argc, char** argv)
 {
@@ -353,6 +359,8 @@ void timer(int value)
 				radomcorail[1].y += 0.008f;
 				radomcorail[2].y += 0.005f;
 				radomcorail[3].y += 0.01f;
+				radomcorail[4].y += 0.015f;
+				radomcorail[5].y += 0.012f;
 				if (radomcorail[i].y > 2.3234f)
 				{
 
@@ -365,6 +373,8 @@ void timer(int value)
 				radomcorail[1].y -= 0.008f;
 				radomcorail[2].y -= 0.005f;
 				radomcorail[3].y -= 0.01f;
+				radomcorail[4].y -= 0.015f;
+				radomcorail[5].y -= 0.012f;
 				if (radomcorail[i].y < 0.7f)
 				{
 
@@ -437,7 +447,9 @@ void timer(int value)
 	}
 
 
-	
+	if (Opencheck==true)
+	{
+
 	if (Door == true)
 	{
 
@@ -469,20 +481,20 @@ void timer(int value)
 		}
 
 	}
+	}
+	
 	
 
 	AngleList.Radian += 20.234f;
 	
-	if ((TransList.T_Bodyx >= TransList.T_StageX + 5.0f || TransList.T_Bodyx <= TransList.T_StageX - 5.0f) &&
-		(TransList.T_Bodyz <= TransList.T_StageZ || TransList.T_Bodyz >= TransList.T_StageZ + 30.0f)
-		/*||
-	//	(TransList.T_Bodyx >= TransList.T_StageX + 24.0f && TransList.T_Bodyx <= TransList.T_StageX - 10.0f&&
-	//		(TransList.T_Bodyz <= TransList.T_StageZ + 14.0f && TransList.T_Bodyz <= TransList.T_StageZ + 30.0f))*/)
+	/*if ((TransList.T_Bodyx >= TransList.T_StageX + 5.0f || TransList.T_Bodyx <= TransList.T_StageX - 5.0f) &&
+		(TransList.T_Bodyz <= TransList.T_StageZ && TransList.T_Bodyz >= TransList.T_StageZ + 30.0f)
+	
 	{
 		TransList.T_Bodyy -= 0.2f;
 		TransList.T_ArmLegy -= 0.2f;
 		TransList.T_Eyey -= 0.2f;
-	}
+	}*/
 	glutPostRedisplay();
 	glutTimerFunc(17, timer, value);
 }
@@ -585,40 +597,60 @@ void keyboardCall(unsigned char key, int x, int y)
 	{
 	case'w':
 		Mainswingchk = 1;
-		AngleList.BodyAngle = 0.0f;
-		AngleList.LegAngle = 0.0f;
-		TransList.T_Eyez += 0.08f;
-		TransList.T_Bodyz += 0.08f;
-		TransList.T_ArmLegz += 0.08f;
-		TransList.T_Cpaez -= 0.08f;
+		AngleList.BodyAngle = Movevalue;
+		AngleList.LegAngle = Movevalue;
+		TransList.T_Eyez += Movevalue;
+		TransList.T_Bodyz += Movevalue;
+		TransList.T_ArmLegz += Movevalue;
+	
+		if (TransList.T_Bodyz>TransList.T_StageZ + 50.0f&& TransList.T_Bodyz < TransList.T_StageZ + 60.0f)
+		{
+	
+			TransList.T_Eyez += Movevalue;
+			TransList.T_Bodyz += Movevalue;
+			TransList.T_ArmLegz += Movevalue;
+			TransList.T_Bodyy += Movevalue;
+			TransList.T_ArmLegy += Movevalue;
+			TransList.T_Eyey += Movevalue;
+		}
 		break;
 
 	case's':
 		Mainswingchk = 1;
 		AngleList.BodyAngle = 180.0f;
 		AngleList.LegAngle = 0.0f;
-		TransList.T_Eyez -= 0.08f;
-		TransList.T_Bodyz -= 0.08f;
-		TransList.T_ArmLegz -= 0.08f;
-		TransList.T_Cpaez -= 0.08f;
+		TransList.T_Eyez -= Movevalue;
+		TransList.T_Bodyz -= Movevalue;
+		TransList.T_ArmLegz -= Movevalue;
+		TransList.T_Cpaez -= Movevalue;
+		if (TransList.T_Bodyz > TransList.T_StageZ + 50.0f && TransList.T_Bodyz < TransList.T_StageZ + 60.0f)
+		{
+
+			TransList.T_Eyez -= Movevalue;
+			TransList.T_Bodyz -= Movevalue;
+			TransList.T_ArmLegz -= Movevalue;
+			TransList.T_Bodyy -= Movevalue;
+			TransList.T_ArmLegy -= Movevalue;
+			TransList.T_Eyey -= Movevalue;
+		}
 		break;
 
 	case'a':
 		Mainswingchk = 2;
 		AngleList.BodyAngle = 90.0f;
 		AngleList.LegAngle = 180.0f;
-		TransList.T_Eyex += 0.08f;
-		TransList.T_Bodyx += 0.08f;
-		TransList.T_ArmLegx += 0.08f;
+		TransList.T_Eyex += Movevalue;
+		TransList.T_Bodyx += Movevalue;
+		TransList.T_ArmLegx += Movevalue;
 		break;
 
 	case'd':
 		Mainswingchk = 2;
 		AngleList.BodyAngle = 270.0f;
 		AngleList.LegAngle = 180.0f;
-		TransList.T_Eyex -= 0.08f;
-		TransList.T_Bodyx -= 0.08f;
-		TransList.T_ArmLegx -= 0.08f;
+		TransList.T_Eyex -= Movevalue;
+		TransList.T_Bodyx -= Movevalue;
+		TransList.T_ArmLegx -= Movevalue;
 		break;
 
 	case'z':
@@ -672,7 +704,7 @@ void keyboardCall(unsigned char key, int x, int y)
 
 void InitBuffer()
 {
-	glGenVertexArrays(20, VAO);
+	glGenVertexArrays(22, VAO);
 
 	glBindVertexArray(VAO[0]);
 	glGenBuffers(3, &VBO[0]);
@@ -708,7 +740,7 @@ void InitBuffer()
 
 	}
 
-	for (int i = 5; i < 20; i++)
+	for (int i = 5; i < 21; i++)
 	{
 		glBindVertexArray(VAO[i]);
 		glGenBuffers(3, &VBO[3 * i]);
@@ -749,13 +781,15 @@ void ObjList()
 		readTriangleObj("Sphere2.obj", Vertex[i], Texture[i], Nomal[i]);
 	}
 
-	readTriangleObj("sex.obj", Vertex[13], Texture[13], Nomal[13]);
-	readTriangleObj("sex.obj", Vertex[14], Texture[14], Nomal[14]);
+	readTriangleObj("potal.obj", Vertex[13], Texture[13], Nomal[13]);
+	readTriangleObj("potal.obj", Vertex[14], Texture[14], Nomal[14]);
 	readTriangleObj("cube3_.obj", Vertex[15], Texture[15], Nomal[15]);
 	readTriangleObj("cube3_.obj", Vertex[16], Texture[16], Nomal[16]);
-	readTriangleObj("sex.obj", Vertex[17], Texture[17], Nomal[17]);
+	readTriangleObj("potal.obj", Vertex[17], Texture[17], Nomal[17]);
 	readTriangleObj("crown.obj", Vertex[18], Texture[18], Nomal[18]);
 	readTriangleObj("sword.obj", Vertex[19], Texture[19], Nomal[19]);
+
+	readTriangleObj("plane3.obj", Vertex[20], Texture[20], Nomal[20]);
 }
 
 void drawscene()
@@ -783,9 +817,9 @@ void drawscene()
 		glDrawArrays(GL_TRIANGLES, 0, Vertex[3].size());
 	}
 
-	//--------STAGE
-	glBindVertexArray(VAO[9]);
-
+	//--------STAGE1
+	{
+	glBindVertexArray(VAO[4]);
 	unsigned int StageBlendCheck = glGetUniformLocation(shaderID, "Blendcheck");
 	glUniform1i(StageBlendCheck, 2);
 	glActiveTexture(GL_TEXTURE0);
@@ -802,21 +836,21 @@ void drawscene()
 	glUniformMatrix4fv(StageNormalMatrixLocation, 1, GL_FALSE, glm::value_ptr(StageNormalMatrix));
 	glDrawArrays(GL_TRIANGLES, 0, Vertex[4].size());
 
-	glBindVertexArray(VAO[4]);
-	unsigned int Stage2BlendCheck = glGetUniformLocation(shaderID, "Blendcheck");
-	glUniform1i(Stage2BlendCheck, 2);
+	glBindVertexArray(VAO[9]);
+	unsigned int Stage1BlendCheck = glGetUniformLocation(shaderID, "Blendcheck");
+	glUniform1i(Stage1BlendCheck, 2);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, texture[4]);
 	glUniform1i(glGetUniformLocation(shaderID, "textureC"), 0);
-	glm::mat4 Stage2TrasMatrix = glm::mat4(1.0f);
-	Stage2TrasMatrix = glm::translate(Stage2TrasMatrix, glm::vec3(TransList.T_StageX, TransList.T_StageY, TransList.T_StageZ + 8.0f));
-	Stage2TrasMatrix = glm::rotate(Stage2TrasMatrix, glm::radians(AngleList.StageAngle2), glm::vec3(0.0f, 1.0f, 0.0f));
-	Stage2TrasMatrix = glm::scale(Stage2TrasMatrix, glm::vec3(10.0, 1.0, 30.0f));
-	unsigned int Stage2TransMatrixLocation = glGetUniformLocation(shaderID, "modelTransform");
-	glUniformMatrix4fv(Stage2TransMatrixLocation, 1, GL_FALSE, glm::value_ptr(Stage2TrasMatrix));
-	glm::mat4 Stage2NormalMatrix = glm::mat4(1.0f);
-	unsigned int Stage2NormalMatrixLocation = glGetUniformLocation(shaderID, "normalTransform");
-	glUniformMatrix4fv(Stage2NormalMatrixLocation, 1, GL_FALSE, glm::value_ptr(Stage2NormalMatrix));
+	glm::mat4 Stage1TrasMatrix = glm::mat4(1.0f);
+	Stage1TrasMatrix = glm::translate(Stage1TrasMatrix, glm::vec3(TransList.T_StageX, TransList.T_StageY, TransList.T_StageZ + 8.0f));
+	Stage1TrasMatrix = glm::rotate(Stage1TrasMatrix, glm::radians(AngleList.StageAngle2), glm::vec3(0.0f, 1.0f, 0.0f));
+	Stage1TrasMatrix = glm::scale(Stage1TrasMatrix, glm::vec3(10.0, 1.0, 30.0f));
+	unsigned int Stage1TransMatrixLocation = glGetUniformLocation(shaderID, "modelTransform");
+	glUniformMatrix4fv(Stage1TransMatrixLocation, 1, GL_FALSE, glm::value_ptr(Stage1TrasMatrix));
+	glm::mat4 Stage1NormalMatrix = glm::mat4(1.0f);
+	unsigned int Stage1NormalMatrixLocation = glGetUniformLocation(shaderID, "normalTransform");
+	glUniformMatrix4fv(Stage1NormalMatrixLocation, 1, GL_FALSE, glm::value_ptr(Stage1NormalMatrix));
 	glDrawArrays(GL_TRIANGLES, 0, Vertex[9].size());
 
 	glBindVertexArray(VAO[15]);
@@ -826,7 +860,7 @@ void drawscene()
 	glBindTexture(GL_TEXTURE_2D, texture[4]);
 	glUniform1i(glGetUniformLocation(shaderID, "textureC"), 0);
 	glm::mat4 DoorTrasMatrix = glm::mat4(1.0f);
-	DoorTrasMatrix = glm::translate(DoorTrasMatrix, glm::vec3(TransList.DoorxL + 0.5f, TransList.T_StageY, TransList.T_StageZ + 14.0f));
+	DoorTrasMatrix = glm::translate(DoorTrasMatrix, glm::vec3(TransList.DoorxL + 0.5f, TransList.T_StageY+2.0f, TransList.T_StageZ + 32.0f));
 	DoorTrasMatrix = glm::scale(DoorTrasMatrix, glm::vec3(Scalepos.Doorx, 4.0, 1.0f));
 	unsigned int DoorTransMatrixLocation = glGetUniformLocation(shaderID, "modelTransform");
 	glUniformMatrix4fv(DoorTransMatrixLocation, 1, GL_FALSE, glm::value_ptr(DoorTrasMatrix));
@@ -842,7 +876,7 @@ void drawscene()
 	glBindTexture(GL_TEXTURE_2D, texture[4]);
 	glUniform1i(glGetUniformLocation(shaderID, "textureC"), 0);
 	glm::mat4 Door2TrasMatrix = glm::mat4(1.0f);
-	Door2TrasMatrix = glm::translate(Door2TrasMatrix, glm::vec3(TransList.DoorxR - 0.5f, TransList.T_StageY, TransList.T_StageZ + 14.0f));
+	Door2TrasMatrix = glm::translate(Door2TrasMatrix, glm::vec3(TransList.DoorxR - 0.5f, TransList.T_StageY+2.0f, TransList.T_StageZ + 32.0f));
 	Door2TrasMatrix = glm::scale(Door2TrasMatrix, glm::vec3(Scalepos.Doorx, 4.0, 1.0f));
 	unsigned int Door2TransMatrixLocation = glGetUniformLocation(shaderID, "modelTransform");
 	glUniformMatrix4fv(Door2TransMatrixLocation, 1, GL_FALSE, glm::value_ptr(Door2TrasMatrix));
@@ -851,13 +885,68 @@ void drawscene()
 	glUniformMatrix4fv(Door2NormalMatrixLocation, 1, GL_FALSE, glm::value_ptr(Door2NormalMatrix));
 	glDrawArrays(GL_TRIANGLES, 0, Vertex[16].size());
 
-
-	if ((TransList.DoorxR + 2.0f >= TransList.T_Bodyx && (TransList.T_StageZ + 14.0f) - 1.0f <= TransList.T_Bodyz && (TransList.T_StageZ + 14.0f) + 1.0f >= TransList.T_Bodyz)
-		|| (TransList.DoorxL - 2.0f <= TransList.T_Bodyx && (TransList.T_StageZ + 14.0f) - 1.0f <= TransList.T_Bodyz && (TransList.T_StageZ + 14.0f) + 1.0f >= TransList.T_Bodyz))
+	if ((TransList.DoorxR + 2.0f >= TransList.T_Bodyx && (TransList.T_StageZ + 32.0f) - 1.0f <= TransList.T_Bodyz && (TransList.T_StageZ + 32.0f) + 1.0f >= TransList.T_Bodyz)
+		|| (TransList.DoorxL - 2.0f <= TransList.T_Bodyx && (TransList.T_StageZ + 32.0f) - 1.0f <= TransList.T_Bodyz && (TransList.T_StageZ + 32.0f) + 1.0f >= TransList.T_Bodyz))
 	{
 		TransList.T_Bodyz -= 0.05f;
 		TransList.T_ArmLegz -= 0.05f;
 		TransList.T_Eyez -= 0.05f;
+	}
+	}
+
+
+
+	//----------STAGE2
+	{
+	glBindVertexArray(VAO[4]);
+	unsigned int StageBlendCheck = glGetUniformLocation(shaderID, "Blendcheck");
+	glUniform1i(StageBlendCheck, 2);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, texture[5]);
+	glUniform1i(glGetUniformLocation(shaderID, "textureC"), 0);
+	glm::mat4 StageTrasMatrix = glm::mat4(1.0f);
+	StageTrasMatrix = glm::translate(StageTrasMatrix, glm::vec3(TransList.T_Stage2X , TransList.T_Stage2Y, TransList.T_Stage2Z + 40.0f));
+	StageTrasMatrix = glm::rotate(StageTrasMatrix, glm::radians(AngleList.StageAngle), glm::vec3(0.0f, 1.0f, 0.0f));
+	StageTrasMatrix = glm::scale(StageTrasMatrix, glm::vec3(11.0, 1.0, 24.0));
+	unsigned int StageTransMatrixLocation = glGetUniformLocation(shaderID, "modelTransform");
+	glUniformMatrix4fv(StageTransMatrixLocation, 1, GL_FALSE, glm::value_ptr(StageTrasMatrix));
+	glm::mat4 StageNormalMatrix = glm::mat4(1.0f);
+	unsigned int StageNormalMatrixLocation = glGetUniformLocation(shaderID, "normalTransform");
+	glUniformMatrix4fv(StageNormalMatrixLocation, 1, GL_FALSE, glm::value_ptr(StageNormalMatrix));
+	glDrawArrays(GL_TRIANGLES, 0, Vertex[4].size());
+
+	glBindVertexArray(VAO[9]);
+	unsigned int Stage1BlendCheck = glGetUniformLocation(shaderID, "Blendcheck");
+	glUniform1i(Stage1BlendCheck, 2);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, texture[5]);
+	glUniform1i(glGetUniformLocation(shaderID, "textureC"), 0);
+	glm::mat4 Stage1TrasMatrix = glm::mat4(1.0f);
+	Stage1TrasMatrix = glm::translate(Stage1TrasMatrix, glm::vec3(TransList.T_Stage2X, TransList.T_Stage2Y+2.3f, TransList.T_Stage2Z + 55.0f));
+	Stage1TrasMatrix = glm::rotate(Stage1TrasMatrix, glm::radians(AngleList.StageAngle2-31.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	Stage1TrasMatrix = glm::scale(Stage1TrasMatrix, glm::vec3(11.0, 2.0, 9.0f));
+	unsigned int Stage1TransMatrixLocation = glGetUniformLocation(shaderID, "modelTransform");
+	glUniformMatrix4fv(Stage1TransMatrixLocation, 1, GL_FALSE, glm::value_ptr(Stage1TrasMatrix));
+	glm::mat4 Stage1NormalMatrix = glm::mat4(1.0f);
+	unsigned int Stage1NormalMatrixLocation = glGetUniformLocation(shaderID, "normalTransform");
+	glUniformMatrix4fv(Stage1NormalMatrixLocation, 1, GL_FALSE, glm::value_ptr(Stage1NormalMatrix));
+	glDrawArrays(GL_TRIANGLES, 0, Vertex[9].size());
+
+	glBindVertexArray(VAO[20]);
+	unsigned int Stage1BlendCheck2 = glGetUniformLocation(shaderID, "Blendcheck");
+	glUniform1i(Stage1BlendCheck2, 2);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, texture[5]);
+	glUniform1i(glGetUniformLocation(shaderID, "textureC"), 0);
+	glm::mat4 Stage1TrasMatrix2 = glm::mat4(1.0f);
+	Stage1TrasMatrix2 = glm::translate(Stage1TrasMatrix2, glm::vec3(TransList.T_Stage2X - 5.5f, TransList.T_Stage2Y + 4.8f, TransList.T_Stage2Z + 64.0f));
+	Stage1TrasMatrix2 = glm::scale(Stage1TrasMatrix2, glm::vec3(20.0, 1.0, 11.0f));
+	unsigned int Stage1TransMatrixLocation2 = glGetUniformLocation(shaderID, "modelTransform");
+	glUniformMatrix4fv(Stage1TransMatrixLocation2, 1, GL_FALSE, glm::value_ptr(Stage1TrasMatrix2));
+	glm::mat4 Stage2NormalMatrix2 = glm::mat4(1.0f);
+	unsigned int Stage1NormalMatrixLocation2 = glGetUniformLocation(shaderID, "normalTransform");
+	glUniformMatrix4fv(Stage1NormalMatrixLocation2, 1, GL_FALSE, glm::value_ptr(Stage2NormalMatrix2));
+	glDrawArrays(GL_TRIANGLES, 0, Vertex[20].size());
 	}
 
 
@@ -1072,7 +1161,7 @@ void drawscene()
 	glDrawArrays(GL_TRIANGLES, 0, Vertex[19].size());
 
 	//--------------TRAP
-	for (int i = 0; i < 4; i++)
+	for (int i = 0; i < 6; i++)
 	{
 
 		glBindVertexArray(VAO[12]);
@@ -1098,6 +1187,7 @@ void drawscene()
 			TransList.T_Bodyz -= 0.2f;
 			TransList.T_ArmLegz -= 0.2f;
 			TransList.T_Eyez -= 0.2f;
+			
 		}
 	}
 
@@ -1147,13 +1237,15 @@ void drawscene()
 	}
 
 	glBindVertexArray(VAO[17]);
+	for (size_t i = 0; i < 2; i++)
+	{
 	unsigned int FlagBlendCheck = glGetUniformLocation(shaderID, "Blendcheck");
 	glUniform1i(FlagBlendCheck, 2);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, texture[3]);
 	glUniform1i(glGetUniformLocation(shaderID, "textureC"), 0);
 	glm::mat4 FlagTrasMatrix = glm::mat4(1.0f);
-	FlagTrasMatrix = glm::translate(FlagTrasMatrix, glm::vec3(TransList.T_StageX+28.0, TransList.T_StageY, TransList.T_StageZ+21.0f));
+	FlagTrasMatrix = glm::translate(FlagTrasMatrix, glm::vec3(Potalx[i], TransList.T_StageY, Potalz[i]));
 	FlagTrasMatrix = glm::rotate(FlagTrasMatrix, glm::radians(AngleList.Radian), glm::vec3(0.0f, 1.0f, 0.0f));
 	FlagTrasMatrix = glm::scale(FlagTrasMatrix, glm::vec3(1.0f, 1.0, 1.0f));
 	unsigned int FlagTransMatrixLocation = glGetUniformLocation(shaderID, "modelTransform");
@@ -1165,12 +1257,15 @@ void drawscene()
 	if (TransList.T_Bodyz>=(TransList.T_StageZ+21.0f)-0.5f && TransList.T_Bodyz <= (TransList.T_StageZ + 21.0f) + 0.5f && 
 		TransList.T_Bodyx >= (TransList.T_StageX + 28.0f) - 0.5f&& TransList.T_Bodyx <= (TransList.T_StageX + 28.0f) + 0.5f)
 	{
-		TransList.T_Bodyx = 0.0f;
-		TransList.T_ArmLegx = 0.0f;
-		TransList.T_Eyex = 0.0f;
-		TransList.T_Bodyz = TransList.T_StageZ + 23.0f;
+		TransList.T_Bodyx = Potalx[1];
+		TransList.T_ArmLegx = Potalx[1];
+		TransList.T_Eyex = Potalx[1];
+		TransList.T_Bodyz = Potalz[1];
 		TransList.T_ArmLegz = TransList.T_Bodyz+2.0f;
-		TransList.T_Eyez = TransList.T_StageZ + 23.0f;
+		TransList.T_Eyez = TransList.T_Bodyz;
+		AngleList.anglecamera += 15.0f;
+		Opencheck = true;
+	}
 	}
 	
 }
@@ -1179,7 +1274,7 @@ void drawscene()
 void initTexture()
 {
 
-	glGenTextures(4, &texture[0]);
+	glGenTextures(5, &texture[0]);
 	glBindTexture(GL_TEXTURE_2D, texture[0]);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -1219,7 +1314,7 @@ void initTexture()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	int TrapwidthImage, TrapheightImage, TrapnumberOfChannel;
-	unsigned char* Trap = stbi_load("Helycain.jpg", &TrapwidthImage, &TrapheightImage, &TrapnumberOfChannel, 0);
+	unsigned char* Trap = stbi_load("Helyimage.jpg", &TrapwidthImage, &TrapheightImage, &TrapnumberOfChannel, 0);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, TrapwidthImage, TrapheightImage, 0, GL_RGB, GL_UNSIGNED_BYTE, Trap);
 	glGenerateMipmap(GL_TEXTURE_2D);
 	stbi_image_free(Trap);
@@ -1234,5 +1329,16 @@ void initTexture()
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, TailWidthImage, TailHeightImage, 0, GL_RGB, GL_UNSIGNED_BYTE, TailData);
 	glGenerateMipmap(GL_TEXTURE_2D);
 	stbi_image_free(TailData);
+
+	glBindTexture(GL_TEXTURE_2D, texture[5]);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	int Stage2WidthImage, Stage2HeightImage, Stage2numberOfChannel;
+	unsigned char* Stage2Data = stbi_load("Stage2Tail.jpg", &Stage2WidthImage, &Stage2HeightImage, &Stage2numberOfChannel, 0);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, Stage2WidthImage, Stage2HeightImage, 0, GL_RGB, GL_UNSIGNED_BYTE, Stage2Data);
+	glGenerateMipmap(GL_TEXTURE_2D);
+	stbi_image_free(Stage2Data);
 
 }
