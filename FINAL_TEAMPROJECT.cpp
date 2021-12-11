@@ -1,5 +1,5 @@
-#include<glew.h>
-#include<freeglut.h>
+#include<gl/glew.h>
+#include<gl/freeglut.h>
 #include<glm/glm/glm.hpp>
 #include<glm/glm/ext.hpp>
 #include<glm/glm/gtc/matrix_transform.hpp>
@@ -104,22 +104,6 @@ struct Scale
 //trans
 struct Transration
 {
-	float T_r1x = 4.0f;
-	float T_r1y = 0.0f;
-	float T_r1z = -4.0f;
-	//---------------
-	float T_r2x = -4.0f;
-	float T_r2y = 0.0f;
-	float T_r2z = -4.0f;
-	//--------------
-	float T_r3x = -2.0f;
-	float T_r3y = 0.0f;
-	float T_r3z = 0.0f;
-	//----------------
-	float T_r4x = 2.0f;
-	float T_r4y = 0.0f;
-	float T_r4z = 0.0f;
-	//------------------
 	float T_x = 0.0f;
 	float T_y = 0.8f;
 	float T_z = 0.0f;
@@ -150,7 +134,7 @@ struct Transration
 	//----------------
 	float T_ArmLegx = 0.0f;
 	float T_ArmLegy = 0.77f;
-	float T_ArmLegz = -0.0f;
+	float T_ArmLegz = 0.0f;
 	//-------------------
 	float DoorxL = 1.8f;
 	float DoorxR = -1.8f;
@@ -208,7 +192,7 @@ bool snowcheck = true;
 
 
 glm::vec3 objC = glm::vec3(0, 0, 0);
-glm::vec3 cameraPos = glm::vec3(1.0f, 3.0f, 8.0f);
+glm::vec3 cameraPos = glm::vec3(1.0f, 3.0f, 10.0f);
 glm::vec3 lightPos = glm::vec3(0, 3.0f, 2.5f);
 glm::vec3 lightColor = glm::vec3(1.4f, 1.3f, 1.3f);
 glm::vec3 Cameraposdir = glm::vec3(0.0f);
@@ -642,7 +626,7 @@ void keyboardCall(unsigned char key, int x, int y)
 		break;
 
 	case'Z':
-		AngleList.anglecamera -= 3.0f;
+		AngleList.anglecamera += 3.0f;
 		break;
 
 	case'c':
@@ -1154,7 +1138,7 @@ void drawscene()
 		unsigned int HELYCOPROWNormalLocation = glGetUniformLocation(shaderID, "normalTransform");
 		glUniformMatrix4fv(HELYCOPROWNormalLocation, 1, GL_FALSE, glm::value_ptr(HELYCOPROWNormal));
 		glDrawArrays(GL_TRIANGLES, 0, Vertex[14].size());
-		if (TransList.T_Bodyx >= HelyTrapx[i] - 2.0f && TransList.T_Bodyx <= HelyTrapx[i] + 0.5f && HelyTrapz[i] - 1.5 <= TransList.T_Bodyz && HelyTrapz[i] + 1.5 >= TransList.T_Bodyz)
+		if (TransList.T_Bodyx >= HelyTrapx[i] - 3.0f && TransList.T_Bodyx <= HelyTrapx[i] + 0.5f && HelyTrapz[i] - 1.0<= TransList.T_Bodyz && HelyTrapz[i] + 1.0 >= TransList.T_Bodyz)
 		{
 			TransList.T_Bodyx -= 0.02f;
 			TransList.T_ArmLegx -= 0.02f;
@@ -1178,7 +1162,16 @@ void drawscene()
 	unsigned int FlagNormalMatrixLocation = glGetUniformLocation(shaderID, "normalTransform");
 	glUniformMatrix4fv(FlagNormalMatrixLocation, 1, GL_FALSE, glm::value_ptr(FlagNormalMatrix));
 	glDrawArrays(GL_TRIANGLES, 0, Vertex[17].size());
-
+	if (TransList.T_Bodyz>=(TransList.T_StageZ+21.0f)-0.5f && TransList.T_Bodyz <= (TransList.T_StageZ + 21.0f) + 0.5f && 
+		TransList.T_Bodyx >= (TransList.T_StageX + 28.0f) - 0.5f&& TransList.T_Bodyx <= (TransList.T_StageX + 28.0f) + 0.5f)
+	{
+		TransList.T_Bodyx = 0.0f;
+		TransList.T_ArmLegx = 0.0f;
+		TransList.T_Eyex = 0.0f;
+		TransList.T_Bodyz = TransList.T_StageZ + 23.0f;
+		TransList.T_ArmLegz = TransList.T_Bodyz+2.0f;
+		TransList.T_Eyez = TransList.T_StageZ + 23.0f;
+	}
 	
 }
 
