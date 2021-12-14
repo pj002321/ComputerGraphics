@@ -9,6 +9,10 @@
 #include<math.h>
 #include<fstream>
 #include<string>
+#include <mmsystem.h>    
+#include<Windows.h>
+#pragma comment(lib,"winmm.lib")
+
 #include "filetobuf.h"
 #include "_makeshader.h"
 #include "readTriangleObj.h"
@@ -166,16 +170,28 @@ Snow SaveLocation[200];
 Snow SnowSpeed[200];
 
 
-//--Star
+//--Light cube
 struct Star {
 	float x;
 	float y;
 	float z;
-};
-Star StarLocation[15];
-Star StarSaveLocation[15];
-Star StarSpeed[15];
 
+	
+};
+Star StarLocation[80];
+Star StarSaveLocation[80];
+Star StarSpeed[80];
+
+struct Ice {
+	float x;
+	float y;
+	float z;
+};
+
+Ice IceLocationy[8];
+Ice IceSpeed[8];
+float IceLocationx[5] = {-2.0f,-4.0f,-5.0f,-8.0f,};
+float IceLocationz[5]= {81.0f,84.0f,86.0f,89.0f};
 //--Trap
 struct Trap {
 	float x;
@@ -188,9 +204,9 @@ Trap Pullmove[3];
 GLuint VAO[30];
 GLuint VBO[90];
 
-vector<glm::vec4> Vertex[25];
-vector<glm::vec4> Nomal[25];
-vector<glm::vec2> Texture[25];
+vector<glm::vec4> Vertex[26];
+vector<glm::vec4> Nomal[26];
+vector<glm::vec2> Texture[26];
 
 float angle = 0.0f;
 float cameraRevolu = 0.0f;
@@ -208,7 +224,7 @@ bool JumpState = false;
 bool TrapJumpState = true;
 bool PullTrapcheck = true;
 bool snowcheck = true;
-
+bool Starchek = true;
 int Mainswingchk = 1;
 int trapjumpcheck = 0;
 int selectLightColor = 0;
@@ -219,7 +235,8 @@ int PullTrapPoint3 = 0;
 int PullTrapPoint4 = 0;
 int PullTrapPoint5 = 0;
 int PullTrapPoint6 = 0;
-
+bool Icecheck = true;
+bool Icereturn = true;
 glm::vec3 objC = glm::vec3(0, 0, 0);
 glm::vec3 cameraPos = glm::vec3(1.0f, 3.0f, 10.0f);
 glm::vec3 lightPos = glm::vec3(0, 3.0f, 2.5f);
@@ -261,48 +278,58 @@ void LocationRandom() {
 		SnowSpeed[i].y = SpeedY;
 	}
 
-	for (int i = 0; i < 15; i++) {
+	for (int i = 0; i < 80; i++) {
 		random_device rd;
 		default_random_engine dre(rd());
-		uniform_real_distribution<>ScaleXZ(-15.0, 22.0);
-		uniform_real_distribution<>LoctionY(0.0, 7.0);
-		uniform_real_distribution<>Speed(0.02, 0.05);
+		uniform_real_distribution<>ScaleX(-20.0, 20.0);
+		uniform_real_distribution<>LoctionY(-3.0, -2.5);
+		uniform_real_distribution<>ScaleZ(-8.0, 60.0);
+		uniform_real_distribution<>SpeedY(0.01, 0.03);
+	
+		
 
-		float Sx1 = ScaleXZ(dre);
-		float Sz1 = ScaleXZ(dre);
+		float Sx1 = ScaleX(dre);
+		float Sz1 = ScaleZ(dre);
 		float Sy1 = LoctionY(dre);
-		float SpeedY = Speed(dre);
-
-
+		float SP = SpeedY(dre);
+	
 		StarLocation[i].x = Sx1;
 		StarLocation[i].y = Sy1;
 		StarLocation[i].z = Sz1;
+
+		
 
 		StarSaveLocation[i].x = Sx1;
 		StarSaveLocation[i].y = Sy1;
 		StarSaveLocation[i].z = Sz1;
 
-		StarSpeed[i].y = SpeedY;
-	}
 
+		StarSpeed[i].y = SP;
+	}
+	
 	for (int i = 0; i < 6; i++)
 	{
 		random_device rdx;
 		random_device rdz;
+		random_device rdi;
+		default_random_engine drei(rdi());
 		default_random_engine drex(rdx());
 		default_random_engine drez(rdz());
-		uniform_int_distribution<>Random(-4, 5);
-		uniform_real_distribution<>RandomY(0, 0.05);
+		uniform_int_distribution<>Random(-4, 4);
+		uniform_real_distribution<>RandomY(0, 0.06);
+		uniform_real_distribution<>IY(9.0, 9.5);
+		uniform_real_distribution<>ISpeed(0.05, 0.08);
 		float RX = Random(drex);
 		float RZ = Random(drez);
 		float RY = RandomY(drez);
+		float I_Y = IY(drei);
+		float I_Speed = ISpeed(drei);
 
+		IceSpeed[i].y = I_Speed;
+		IceLocationy[i].y = I_Y;
 		radomcorail[i].x = RX;
 		radomcorail[i].z = RZ;
 		radomcorail[i].y = 1.0f;
-
-		
-
 	}
 	
 
@@ -319,6 +346,7 @@ float Potalz[3] = { 21.0,30.0 };
 
 int main(int argc, char** argv)
 {
+	//PlaySound(TEXT("backsound.wav"), NULL, SND_ASYNC | SND_ALIAS);
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
 	glutInitWindowPosition(0, 0);
@@ -360,6 +388,52 @@ void timer(int value)
 		}
 	}
 
+	if (snowcheck == true)
+	{
+		for (int i = 0; i < 40; i++) {
+		if (Starchek == true)
+		{
+
+			StarLocation[i].y += StarSpeed[i].y;
+			if (StarLocation[i].y >= -2.0f) {
+				Starchek = false;
+			}
+
+		}
+		if (Starchek==false)
+		{
+			
+				StarLocation[i].y -= StarSpeed[i].y;
+				if (StarLocation[i].y <= -3.0f) {
+					Starchek = true;
+				}
+
+			
+		}
+		}
+	}
+
+	if (snowcheck == true)
+	{
+		for (int i = 0; i < 80; i++) {
+			SLocation[i].y += SnowSpeed[i].y;
+			if (SLocation[i].y >= 6.0f) {
+				SLocation[i].y = SaveLocation[i].y;
+			}
+
+		}
+	}
+
+	if (Icecheck == true)
+	{
+		for (int i = 0; i < 8; i++) {
+			IceLocationy[i].y -= IceSpeed[i].y;
+			if (IceLocationy[i].y<= TransList.T_Stage2Y + 4.8f)
+			{
+				IceLocationy[i].y = 9.0f;
+			}
+		}
+	}
 
 	if (JumpState == true)
 	{
@@ -817,9 +891,9 @@ void keyboardCall(unsigned char key, int x, int y)
 
 void InitBuffer()
 {
-	glGenVertexArrays(24, VAO);
+	glGenVertexArrays(26, VAO);
 
-	for (int i = 0; i < 23; i++)
+	for (int i = 0; i < 25; i++)
 	{
 		glBindVertexArray(VAO[i]);
 		glGenBuffers(3, &VBO[3 * i]);
@@ -871,7 +945,8 @@ void ObjList()
 	readTriangleObj("plane3.obj", Vertex[20], Texture[20], Nomal[20]);
 	readTriangleObj("cube3_.obj", Vertex[21], Texture[21], Nomal[21]);
 	readTriangleObj("cube3_.obj", Vertex[22], Texture[22], Nomal[22]);
-	//readTriangleObj("countingstar.obj", Vertex[23], Texture[23], Nomal[23]);
+	readTriangleObj("cube3_.obj", Vertex[23], Texture[23], Nomal[23]);
+	readTriangleObj("fallingice.obj", Vertex[24], Texture[24], Nomal[24]);
 }
 
 void drawscene()
@@ -900,27 +975,47 @@ void drawscene()
 	}
 
 
-	//for (int i = 0; i < 15; i++)
-	//{
-	/*	glBindVertexArray(VAO[23]);
+	for (int i = 0; i < 80; i++)
+	{
+		glBindVertexArray(VAO[23]);
 		unsigned int StarBlendCheck = glGetUniformLocation(shaderID, "Blendcheck");
 		glUniform1i(StarBlendCheck, 2);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, texture[0]);
 		glm::mat4 Star = glm::mat4(1.0f);
-		Star = glm::translate(Star, glm::vec3(0.0,0.0,0.0));
-		Star = glm::scale(Star, glm::vec3(1.0f, 1.0f, 1.0f));
+		Star = glm::translate(Star, glm::vec3(StarLocation[i].x, StarLocation[i].y, StarLocation[i].z));
+		Star = glm::scale(Star, glm::vec3(2.0f, 2.0f, 2.0f));
 		unsigned int StarLocation = glGetUniformLocation(shaderID, "modelTransform");
 		glUniformMatrix4fv(StarLocation, 1, GL_FALSE, glm::value_ptr(Star));
 		glm::mat4 StarNormalmodel = glm::mat4(1.0f);
-		StarNormalmodel = glm::translate(StarNormalmodel, glm::vec3(0.0,0.0,0.0));
+		StarNormalmodel = glm::translate(StarNormalmodel, glm::vec3(SLocation[i].x, SLocation[i].y, SLocation[i].z));
 		unsigned int StarNormalmodelLocation = glGetUniformLocation(shaderID, "normalTransform");
 		glUniformMatrix4fv(StarNormalmodelLocation, 1, GL_FALSE, glm::value_ptr(StarNormalmodel));
 		unsigned int StarColorLocation = glGetUniformLocation(shaderID, "objColor");
 		glUniform3f(StarColorLocation, 1, 0.388235, 0.278431);
-		glDrawArrays(GL_TRIANGLES, 0, Vertex[23].size());*/
-	//}
+		glDrawArrays(GL_TRIANGLES, 0, Vertex[23].size());
+	}
 
+	for (int i = 0; i < 8; i++)
+	{
+		glBindVertexArray(VAO[24]);
+		unsigned int ICEBlendCheck = glGetUniformLocation(shaderID, "Blendcheck");
+		glUniform1i(ICEBlendCheck, 2);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, texture[6]);
+		glm::mat4 ICE = glm::mat4(1.0f);
+		ICE = glm::translate(ICE, glm::vec3(IceLocationx[i], IceLocationy[i].y, IceLocationz[i]));
+		ICE = glm::scale(ICE, glm::vec3(14.0f, 10.0f, 14.0f));
+		unsigned int ICELocation = glGetUniformLocation(shaderID, "modelTransform");
+		glUniformMatrix4fv(ICELocation, 1, GL_FALSE, glm::value_ptr(ICE));
+		glm::mat4 ICENormalmodel = glm::mat4(1.0f);
+		ICENormalmodel = glm::translate(ICENormalmodel, glm::vec3(IceLocationx[i], IceLocationy[i].y, IceLocationz[i]));
+		unsigned int ICENormalmodelLocation = glGetUniformLocation(shaderID, "normalTransform");
+		glUniformMatrix4fv(ICENormalmodelLocation, 1, GL_FALSE, glm::value_ptr(ICENormalmodel));
+		unsigned int ICEColorLocation = glGetUniformLocation(shaderID, "objColor");
+		glUniform3f(ICEColorLocation, 1, 0.388235, 0.278431);
+		glDrawArrays(GL_TRIANGLES, 0, Vertex[24].size());
+	}
 	//--------STAGE1
 	{
 		glBindVertexArray(VAO[4]);
@@ -1331,7 +1426,7 @@ void drawscene()
 		HELYCOPROW = glm::translate(HELYCOPROW, glm::vec3(HelyTrapx[i], TransList.T_Trapy2, HelyTrapz[i]));
 		HELYCOPROW = glm::rotate(HELYCOPROW, glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 		HELYCOPROW = glm::rotate(HELYCOPROW, glm::radians(AngleList.AngleTrap2), glm::vec3(0.0f, 1.0f, 0.0f));
-		HELYCOPROW = glm::scale(HELYCOPROW, glm::vec3(0.15f, 0.15f, 2.0f));
+		HELYCOPROW = glm::scale(HELYCOPROW, glm::vec3(0.45f, 0.15f, 2.0f));
 		unsigned int HELYCOPROWLocation = glGetUniformLocation(shaderID, "modelTransform");
 		glUniformMatrix4fv(HELYCOPROWLocation, 1, GL_FALSE, glm::value_ptr(HELYCOPROW));
 		glm::mat4 HELYCOPROWNormal = glm::mat4(1.0f);
@@ -1339,11 +1434,11 @@ void drawscene()
 		unsigned int HELYCOPROWNormalLocation = glGetUniformLocation(shaderID, "normalTransform");
 		glUniformMatrix4fv(HELYCOPROWNormalLocation, 1, GL_FALSE, glm::value_ptr(HELYCOPROWNormal));
 		glDrawArrays(GL_TRIANGLES, 0, Vertex[14].size());
-		if (TransList.T_Bodyx >= HelyTrapx[i] - 3.0f && TransList.T_Bodyx <= HelyTrapx[i] + 0.5f && HelyTrapz[i] - 1.0 <= TransList.T_Bodyz && HelyTrapz[i] + 1.0 >= TransList.T_Bodyz)
+		if (TransList.T_Bodyx >= HelyTrapx[i] - 2.5f && TransList.T_Bodyx <= HelyTrapx[i] + 0.5f && HelyTrapz[i] - 1.0 <= TransList.T_Bodyz && HelyTrapz[i] + 1.0 >= TransList.T_Bodyz)
 		{
-			TransList.T_Bodyx -= 0.02f;
-			TransList.T_ArmLegx -= 0.02f;
-			TransList.T_Eyex -= 0.02f;
+			TransList.T_Bodyx -= 0.05f;
+			TransList.T_ArmLegx -= 0.05f;
+			TransList.T_Eyex -= 0.05f;
 		}
 	}
 
@@ -1385,15 +1480,15 @@ void drawscene()
 
 		if (PullTrapRx[i] + 4.0f >= TransList.T_Bodyx && PullTrapRz[i] - 0.5f <= TransList.T_Bodyz && PullTrapRz[i] + 0.5f >= TransList.T_Bodyz)
 		{
-				TransList.T_Bodyx += 0.7f;
-				TransList.T_ArmLegx += 0.7f;
-				TransList.T_Eyex += 0.7f;
+				TransList.T_Bodyx += 1.5f;
+				TransList.T_ArmLegx += 1.5f;
+				TransList.T_Eyex += 1.5f;
 		}
 		if (PullTrapLx[i] - 4.0f <= TransList.T_Bodyx && PullTrapLz[i] - 0.5f <= TransList.T_Bodyz && PullTrapLz[i] + 0.5f >= TransList.T_Bodyz)
 		{
-			TransList.T_Bodyx -= 0.7f;
-			TransList.T_ArmLegx -= 0.7f;
-			TransList.T_Eyex -= 0.7f;
+			TransList.T_Bodyx -= 1.5f;
+			TransList.T_ArmLegx -= 1.5f;
+			TransList.T_Eyex -= 1.5f;
 		}
 	
 	}
@@ -1439,7 +1534,7 @@ void drawscene()
 void initTexture()
 {
 
-	glGenTextures(5, &texture[0]);
+	glGenTextures(7, &texture[0]);
 	glBindTexture(GL_TEXTURE_2D, texture[0]);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -1505,5 +1600,16 @@ void initTexture()
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, Stage2WidthImage, Stage2HeightImage, 0, GL_RGB, GL_UNSIGNED_BYTE, Stage2Data);
 	glGenerateMipmap(GL_TEXTURE_2D);
 	stbi_image_free(Stage2Data);
+
+	glBindTexture(GL_TEXTURE_2D, texture[6]);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	int IceWidthImage, IceHeightImage, IcenumberOfChannel;
+	unsigned char* IceData = stbi_load("ice.jpg", &IceWidthImage, &IceHeightImage, &IcenumberOfChannel, 0);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, IceWidthImage, IceHeightImage, 0, GL_RGB, GL_UNSIGNED_BYTE, IceData);
+	glGenerateMipmap(GL_TEXTURE_2D);
+	stbi_image_free(IceData);
 
 }
