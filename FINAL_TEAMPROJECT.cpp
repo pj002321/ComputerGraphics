@@ -1,5 +1,5 @@
-﻿#include<gl/glew.h>
-#include<gl/freeglut.h>
+﻿#include<glew.h>
+#include<freeglut.h>
 #include<glm/glm/glm.hpp>
 #include<glm/glm/ext.hpp>
 #include<glm/glm/gtc/matrix_transform.hpp>
@@ -154,6 +154,8 @@ struct Transration
 
 }TransList;
 
+
+//--snow
 struct Snow {
 	float x;
 	float y;
@@ -163,6 +165,8 @@ Snow SLocation[200];
 Snow SaveLocation[200];
 Snow SnowSpeed[200];
 
+
+//--Star
 struct Star {
 	float x;
 	float y;
@@ -172,11 +176,13 @@ Star StarLocation[15];
 Star StarSaveLocation[15];
 Star StarSpeed[15];
 
+//--Trap
 struct Trap {
 	float x;
 	float y;
 	float z;
 };
+
 Trap radomcorail[6];
 Trap Pullmove[3];
 GLuint VAO[30];
@@ -186,19 +192,12 @@ vector<glm::vec4> Vertex[25];
 vector<glm::vec4> Nomal[25];
 vector<glm::vec2> Texture[25];
 
-
-float snowx = 0.0f;
-float snowy = 5.8f;
-float snowz = 0.0f;
-unsigned int pyramidtexture;
 float angle = 0.0f;
 float cameraRevolu = 0.0f;
 float lightRevoluAngle = 0.0f;
+
 bool change = false;
 bool Rotate = true;
-bool ScreenRotate = false;
-bool Opening = false;
-int Mainswingchk = 1;
 bool MainswingAngle1 = true;
 bool MainswingAngle2 = false;
 bool TrapAction = true;
@@ -207,17 +206,20 @@ bool Opencheck = false;
 bool TrapHelyAction = false;
 bool JumpState = false;
 bool TrapJumpState = true;
-int jumpcheck = 0;
-int trapjumpcheck = 0;
 bool PullTrapcheck = true;
-int selectLightColor = 0;
 bool snowcheck = true;
+
+int Mainswingchk = 1;
+int trapjumpcheck = 0;
+int selectLightColor = 0;
+int jumpcheck = 0;
 int PullTrapPoint = 0;
 int PullTrapPoint2 = 0;
 int PullTrapPoint3 = 0;
 int PullTrapPoint4 = 0;
 int PullTrapPoint5 = 0;
 int PullTrapPoint6 = 0;
+
 glm::vec3 objC = glm::vec3(0, 0, 0);
 glm::vec3 cameraPos = glm::vec3(1.0f, 3.0f, 10.0f);
 glm::vec3 lightPos = glm::vec3(0, 3.0f, 2.5f);
@@ -235,7 +237,7 @@ glm::vec3 lightColorKind[4] = {
 
 
 void LocationRandom() {
-	for (int i = 0; i < 200; i++) {
+	for (int i = 0; i < 100; i++) {
 		random_device rd;
 		default_random_engine dre(rd());
 		uniform_real_distribution<>ScaleXZ(-15.0, 22.0);
@@ -258,6 +260,7 @@ void LocationRandom() {
 
 		SnowSpeed[i].y = SpeedY;
 	}
+
 	for (int i = 0; i < 15; i++) {
 		random_device rd;
 		default_random_engine dre(rd());
@@ -281,6 +284,7 @@ void LocationRandom() {
 
 		StarSpeed[i].y = SpeedY;
 	}
+
 	for (int i = 0; i < 6; i++)
 	{
 		random_device rdx;
@@ -340,10 +344,7 @@ int main(int argc, char** argv)
 
 void timer(int value)
 {
-	if (ScreenRotate)
-	{
-		cameraRevolu -= 2.0f;
-	}
+
 	if (Rotate == true)
 	{
 		angle += 3.0f;
@@ -370,9 +371,7 @@ void timer(int value)
 			TransList.T_Bodyy += 0.05f;
 			TransList.T_ArmLegy += 0.05f;
 			TransList.T_Eyey += 0.05f;
-			if (TransList.T_Bodyy >= 1.6f)
-			{
-
+			if (TransList.T_Bodyy >= 1.6f) {
 				jumpcheck = 1;
 			}
 		}
@@ -383,20 +382,14 @@ void timer(int value)
 			TransList.T_ArmLegy -= 0.05f;
 			TransList.T_Eyey -= 0.05f;
 			Scalepos.My -= 0.005f;
-			if (Scalepos.My < -0.1f)
-			{
+			if (Scalepos.My < -0.1f) {
 				Scalepos.My += 0.005f;
 			}
 
-			if (TransList.T_Bodyy <= 0.7f)
-			{
+			if (TransList.T_Bodyy <= 0.7f) {
 				jumpcheck = 0;
-
 			}
-
 		}
-
-
 	}
 
 	if (TrapJumpState == true)
@@ -406,7 +399,6 @@ void timer(int value)
 
 			if (trapjumpcheck == 0)
 			{
-
 				radomcorail[0].y += 0.004f;
 				radomcorail[1].y += 0.008f;
 				radomcorail[2].y += 0.005f;
@@ -415,10 +407,10 @@ void timer(int value)
 				radomcorail[5].y += 0.012f;
 				if (radomcorail[i].y > 2.3234f)
 				{
-
 					trapjumpcheck = 1;
 				}
 			}
+
 			if (trapjumpcheck == 1)
 			{
 				radomcorail[0].y -= 0.004f;
@@ -429,15 +421,10 @@ void timer(int value)
 				radomcorail[5].y -= 0.012f;
 				if (radomcorail[i].y < 0.7f)
 				{
-
 					trapjumpcheck = 0;
-
 				}
-
 			}
 		}
-
-
 	}
 
 	if (Mainswingchk)
@@ -489,7 +476,7 @@ void timer(int value)
 
 	}
 
-	if (TransList.T_Bodyz >= 15.0f)
+	if (TransList.T_Bodyz >= 13.0f)
 	{
 		TrapHelyAction = true;
 	}
@@ -536,6 +523,7 @@ void timer(int value)
 	}
 
 	if (PullTrapcheck == true)
+	
 	{
 			//L
 			if (PullTrapPoint == 0){
@@ -618,13 +606,11 @@ void timer(int value)
 				if (PullTrapRx[2] <= -3.0f)
 					PullTrapPoint6 = 0;
 			}
-		
-
 	}
 	
 	AngleList.Radian += 20.234f;
 
-	if (TransList.T_Bodyz >= TransList.T_StageZ-6.0f && TransList.T_Bodyz <= TransList.T_StageZ + 15.0f)
+	if (TransList.T_Bodyz >= TransList.T_StageZ-6.0f && TransList.T_Bodyz <= TransList.T_StageZ + 13.0f)
 	{
 		if (TransList.T_Bodyx >= TransList.T_StageX + 5.0f ||TransList.T_Bodyx <= TransList.T_StageX - 5.0f)
 		{
@@ -812,21 +798,6 @@ void keyboardCall(unsigned char key, int x, int y)
 		selectLightColor++;
 		lightColor = lightColorKind[selectLightColor % 4];
 		break;
-	case'r':
-		AngleList.ArmAngle += 1.0f;
-		break;
-	case'R':
-		lightRevoluAngle -= 1.0f;
-		break;
-	case'k':
-		lightPos.z += 0.2f;
-		break;
-	case'l':
-		lightPos.z -= 0.2f;
-		break;
-	case 'y':
-		ScreenRotate = !ScreenRotate;
-		break;
 	case'q':
 		glutLeaveMainLoop();
 		break;
@@ -834,11 +805,6 @@ void keyboardCall(unsigned char key, int x, int y)
 		JumpState = true;
 		jumpcheck = 0;
 		break;
-	case 'N': //special
-		AngleList.StageAngle += 5.0f;
-		AngleList.StageAngle2 += 5.0f;
-		break;
-
 
 
 	}
@@ -1056,6 +1022,7 @@ void drawscene()
 		glUniformMatrix4fv(StageNormalMatrixLocation, 1, GL_FALSE, glm::value_ptr(StageNormalMatrix));
 		glDrawArrays(GL_TRIANGLES, 0, Vertex[4].size());
 		}
+
 
 		glBindVertexArray(VAO[9]);
 		unsigned int Stage1BlendCheck = glGetUniformLocation(shaderID, "Blendcheck");
@@ -1333,6 +1300,7 @@ void drawscene()
 		}
 	}
 
+
 	for (int i = 0; i < 7; i++)
 	{
 		glBindVertexArray(VAO[13]);
@@ -1379,9 +1347,9 @@ void drawscene()
 		}
 	}
 
-	for (size_t i = 0; i < 3; i++)
-	{
 
+	for (int i = 0; i < 3; i++)
+	{
 
 		glBindVertexArray(VAO[21]);
 		unsigned int PullTrapBlendCheck = glGetUniformLocation(shaderID, "Blendcheck");
@@ -1431,7 +1399,6 @@ void drawscene()
 	}
 
 
-
 	//---potal
 	glBindVertexArray(VAO[17]);
 	for (size_t i = 0; i < 2; i++)
@@ -1451,18 +1418,19 @@ void drawscene()
 		unsigned int FlagNormalMatrixLocation = glGetUniformLocation(shaderID, "normalTransform");
 		glUniformMatrix4fv(FlagNormalMatrixLocation, 1, GL_FALSE, glm::value_ptr(FlagNormalMatrix));
 		glDrawArrays(GL_TRIANGLES, 0, Vertex[17].size());
-		if (TransList.T_Bodyz >= (TransList.T_StageZ + 21.0f) - 0.5f && TransList.T_Bodyz <= (TransList.T_StageZ + 21.0f) + 0.5f &&
-			TransList.T_Bodyx >= (TransList.T_StageX + 28.0f) - 0.5f && TransList.T_Bodyx <= (TransList.T_StageX + 28.0f) + 0.5f)
-		{
-			TransList.T_Bodyx = Potalx[1];
-			TransList.T_ArmLegx = Potalx[1];
-			TransList.T_Eyex = Potalx[1];
-			TransList.T_Bodyz = Potalz[1];
-			TransList.T_ArmLegz = TransList.T_Bodyz + 2.0f;
-			TransList.T_Eyez = TransList.T_Bodyz;
-			AngleList.anglecamera += 15.0f;
-			Opencheck = true;
-		}
+
+			if (TransList.T_Bodyz >= (TransList.T_StageZ + 21.0f) - 0.5f && TransList.T_Bodyz <= (TransList.T_StageZ + 21.0f) + 0.5f 
+				&& TransList.T_Bodyx >= (TransList.T_StageX + 28.0f) - 0.5f && TransList.T_Bodyx <= (TransList.T_StageX + 28.0f) + 0.5f)
+			{
+				TransList.T_Bodyx = Potalx[1];
+				TransList.T_ArmLegx = Potalx[1];
+				TransList.T_Eyex = Potalx[1];
+				TransList.T_Bodyz = Potalz[1];
+				TransList.T_ArmLegz = TransList.T_Bodyz + 2.0f;
+				TransList.T_Eyez = TransList.T_Bodyz;
+				AngleList.anglecamera += 15.0f;
+				Opencheck = true;
+			}
 	}
 
 }
