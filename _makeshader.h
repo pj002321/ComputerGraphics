@@ -1,22 +1,11 @@
 #pragma once
-#include<glew.h>
-#include<freeglut.h>
-#include<glm/glm/glm.hpp>
-#include<glm/glm/ext.hpp>
-#include<glm/glm/gtc/matrix_transform.hpp>
-#include<iostream>
-#include<vector>
-#include<random>
-#include<math.h>
-#include<fstream>
-#include<string>
 #include "filetobuf.h"
 
 void makeVertexShader();
 void makeFragmentShader();
 void makeShaderID();
 GLuint fragmentShader;
-GLuint modelvertexShader;
+GLuint vertexID;
 GLuint shaderID;
 
 
@@ -27,15 +16,15 @@ char* fragmentSource;
 void makeVertexShader()
 {
 	vertexSource = filetobuf("VertexTextureShader.glsl");
-	modelvertexShader = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(modelvertexShader, 1, &vertexSource, NULL);
-	glCompileShader(modelvertexShader);
+	vertexID = glCreateShader(GL_VERTEX_SHADER);
+	glShaderSource(vertexID, 1, &vertexSource, NULL);
+	glCompileShader(vertexID);
 
 	GLint result;
 	GLchar errorLog[512];
-	glGetShaderiv(modelvertexShader, GL_COMPILE_STATUS, &result);
+	glGetShaderiv(vertexID, GL_COMPILE_STATUS, &result);
 	if (!result) {
-		glGetShaderInfoLog(modelvertexShader, 512, NULL, errorLog);
+		glGetShaderInfoLog(vertexID, 512, NULL, errorLog);
 		cerr << "VERTEXSHADER ERROR: " << errorLog << endl;
 	}
 }
@@ -63,7 +52,7 @@ void makeShaderID()
 
 	shaderID = glCreateProgram();
 
-	glAttachShader(shaderID, modelvertexShader);
+	glAttachShader(shaderID, vertexID);
 	glAttachShader(shaderID, fragmentShader);
 
 	glLinkProgram(shaderID);
@@ -75,7 +64,7 @@ void makeShaderID()
 		cerr << "ShaderID0 Program ERROR: " << errorLog << endl;
 	}
 
-	glDeleteShader(modelvertexShader);
+	glDeleteShader(vertexID);
 	glDeleteShader(fragmentShader);
 	glUseProgram(shaderID);
 }

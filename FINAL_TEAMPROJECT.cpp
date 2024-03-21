@@ -1,32 +1,17 @@
-﻿#include<glew.h>
-#include<freeglut.h>
-#include<glm/glm/glm.hpp>
-#include<glm/glm/ext.hpp>
-#include<glm/glm/gtc/matrix_transform.hpp>
-#include<iostream>
-#include<vector>
-#include<random>
-#include<math.h>
-#include<fstream>
-#include<string>
-#include <mmsystem.h>    
-#include<Windows.h>
-#pragma comment(lib,"winmm.lib")
-
-#include "filetobuf.h"
-#include "_makeshader.h"
+﻿#include "stdafx.h"
 #include "readTriangleObj.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
-
+char vn[64] = "Shader/VertexTextureShader.glsl";
+char fn[64] = "Shader/fragmentBlendShader.glsl";
+GLuint shaderID;
 void InitBuffer();
 void initTexture();
 using namespace std;
 unsigned int texture[10];
 //call_back
 void MainView();
-void Resize(int w, int h);
 void keyboardCall(unsigned char key, int x, int y);
 
 //func
@@ -36,26 +21,21 @@ void ObjList();
 void drawscene();
 void LocationRandom();
 
-int Wwidth = 0;
-int Wheight = 0;
-
 //Struck
 
-struct Camera
-{
+struct Camera {
 	float C_x = 1.0f;
 	float C_y = 5.0f;
 	float C_z = 9.0f;
-
 }Camerapos;
 
 
-struct Angle
-{
+struct Angle {
+
 	float angle = 0.0f;
 	float anglex = 0.0f;
 	float angley = 0.0f;
-	float AngleTrap2 = 00.0f;
+	float AngleTrap2 = 0.0f;
 	float AngleTrap = 0.0f;
 	float Radian = 0.0f;
 	//---------------------
@@ -176,7 +156,7 @@ struct Star {
 	float y;
 	float z;
 
-	
+
 };
 Star StarLocation[80];
 Star StarSaveLocation[80];
@@ -188,10 +168,10 @@ struct Ice {
 	float z;
 };
 
-Ice IceLocationy[8];
-Ice IceSpeed[8];
-float IceLocationx[5] = {-2.0f,-4.0f,-5.0f,-8.0f,};
-float IceLocationz[5]= {81.0f,84.0f,86.0f,89.0f};
+Ice IceLocationy[6];
+Ice IceSpeed[6];
+float IceLocationx[5] = { -2.0f,-4.0f,-5.0f,-8.0f,-10.0f };
+float IceLocationz[5] = { 81.0f,84.0f,86.0f,89.0f,93.0f };
 //--Trap
 struct Trap {
 	float x;
@@ -243,7 +223,7 @@ glm::vec3 lightPos = glm::vec3(0, 3.0f, 2.5f);
 glm::vec3 lightColor = glm::vec3(1.4f, 1.3f, 1.3f);
 glm::vec3 Cameraposdir = glm::vec3(0.0f);
 glm::vec3 Cameradir = glm::vec3(0.0f);
-float Movevalue = 0.2f;
+float Movevalue = 0.05f;
 
 glm::vec3 lightColorKind[4] = {
 	glm::vec3(0.7f, 0.7f, 0.7f),
@@ -285,19 +265,19 @@ void LocationRandom() {
 		uniform_real_distribution<>LoctionY(-3.0, -2.5);
 		uniform_real_distribution<>ScaleZ(-8.0, 60.0);
 		uniform_real_distribution<>SpeedY(0.01, 0.03);
-	
-		
+
+
 
 		float Sx1 = ScaleX(dre);
 		float Sz1 = ScaleZ(dre);
 		float Sy1 = LoctionY(dre);
 		float SP = SpeedY(dre);
-	
+
 		StarLocation[i].x = Sx1;
 		StarLocation[i].y = Sy1;
 		StarLocation[i].z = Sz1;
 
-		
+
 
 		StarSaveLocation[i].x = Sx1;
 		StarSaveLocation[i].y = Sy1;
@@ -306,7 +286,7 @@ void LocationRandom() {
 
 		StarSpeed[i].y = SP;
 	}
-	
+
 	for (int i = 0; i < 6; i++)
 	{
 		random_device rdx;
@@ -316,12 +296,14 @@ void LocationRandom() {
 		default_random_engine drex(rdx());
 		default_random_engine drez(rdz());
 		uniform_int_distribution<>Random(-4, 4);
-		uniform_real_distribution<>RandomY(0, 0.06);
+		uniform_real_distribution<>RandomY(0.0, 0.06);
+
 		uniform_real_distribution<>IY(9.0, 9.5);
 		uniform_real_distribution<>ISpeed(0.05, 0.08);
 		float RX = Random(drex);
 		float RZ = Random(drez);
 		float RY = RandomY(drez);
+
 		float I_Y = IY(drei);
 		float I_Speed = ISpeed(drei);
 
@@ -331,7 +313,7 @@ void LocationRandom() {
 		radomcorail[i].z = RZ;
 		radomcorail[i].y = 1.0f;
 	}
-	
+
 
 }
 
@@ -350,7 +332,7 @@ int main(int argc, char** argv)
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
 	glutInitWindowPosition(0, 0);
-	glutInitWindowSize(Wwidth, Wheight);
+	glutInitWindowSize(FRAME_WIDTH, FRAME_HEIGHT);
 	glutCreateWindow("TeamProject");
 
 	glewExperimental = GL_TRUE;
@@ -359,7 +341,7 @@ int main(int argc, char** argv)
 	else cout << "Initialize" << endl;
 	ObjList();
 
-	makeShaderID();
+	makeShader(vn,fn,shaderID);
 	InitBuffer();
 	initTexture();
 	LocationRandom();
@@ -391,25 +373,25 @@ void timer(int value)
 	if (snowcheck == true)
 	{
 		for (int i = 0; i < 40; i++) {
-		if (Starchek == true)
-		{
+			if (Starchek == true)
+			{
 
-			StarLocation[i].y += StarSpeed[i].y;
-			if (StarLocation[i].y >= -2.0f) {
-				Starchek = false;
+				StarLocation[i].y += StarSpeed[i].y;
+				if (StarLocation[i].y >= -2.0f) {
+					Starchek = false;
+				}
+
 			}
+			if (Starchek == false)
+			{
 
-		}
-		if (Starchek==false)
-		{
-			
 				StarLocation[i].y -= StarSpeed[i].y;
 				if (StarLocation[i].y <= -3.0f) {
 					Starchek = true;
 				}
 
-			
-		}
+
+			}
 		}
 	}
 
@@ -426,9 +408,9 @@ void timer(int value)
 
 	if (Icecheck == true)
 	{
-		for (int i = 0; i < 8; i++) {
+		for (int i = 0; i < 5; i++) {
 			IceLocationy[i].y -= IceSpeed[i].y;
-			if (IceLocationy[i].y<= TransList.T_Stage2Y + 4.8f)
+			if (IceLocationy[i].y <= TransList.T_Stage2Y + 4.8f)
 			{
 				IceLocationy[i].y = 9.0f;
 			}
@@ -597,96 +579,95 @@ void timer(int value)
 	}
 
 	if (PullTrapcheck == true)
-	
 	{
-			//L
-			if (PullTrapPoint == 0){
-				PullTrapLx[0] -= 0.75;
-				Scalepos.PullScaleLx[0]= 6.0f;
-				if (PullTrapLx[0] <= -1.0f)
-					PullTrapPoint = 1;
-			}
-			if (PullTrapPoint2 == 0){
-				PullTrapLx[1] -= 0.6;
-				Scalepos.PullScaleLx[1] = 6.0f;
-				if (PullTrapLx[1] <= -1.0f)
-					PullTrapPoint2 = 1;
-			}
-			if (PullTrapPoint3==0){
-				PullTrapLx[2] -= 0.9;
-				Scalepos.PullScaleLx[2] = 7.0f;
-				if (PullTrapLx[2] <= -1.0f)
-					PullTrapPoint3 =1;
-			}
+		//L
+		if (PullTrapPoint == 0) {
+			PullTrapLx[0] -= 0.75;
+			Scalepos.PullScaleLx[0] = 6.0f;
+			if (PullTrapLx[0] <= -1.0f)
+				PullTrapPoint = 1;
+		}
+		if (PullTrapPoint2 == 0) {
+			PullTrapLx[1] -= 0.6;
+			Scalepos.PullScaleLx[1] = 6.0f;
+			if (PullTrapLx[1] <= -1.0f)
+				PullTrapPoint2 = 1;
+		}
+		if (PullTrapPoint3 == 0) {
+			PullTrapLx[2] -= 0.9;
+			Scalepos.PullScaleLx[2] = 7.0f;
+			if (PullTrapLx[2] <= -1.0f)
+				PullTrapPoint3 = 1;
+		}
 
-			if (PullTrapPoint == 1){	
-				PullTrapLx[0] += 0.04;
-				Scalepos.PullScaleLx[0] -= 0.02f;
-				if (PullTrapLx[0] >= 3.0f)
-					PullTrapPoint = 0;
-			}
+		if (PullTrapPoint == 1) {
+			PullTrapLx[0] += 0.04;
+			Scalepos.PullScaleLx[0] -= 0.02f;
+			if (PullTrapLx[0] >= 3.0f)
+				PullTrapPoint = 0;
+		}
 
-			if (PullTrapPoint2 == 1){
-				PullTrapLx[1] += 0.04;
-				Scalepos.PullScaleLx[1] -= 0.02f;
-				if (PullTrapLx[1] >= 3.0f)
-					PullTrapPoint2 =0;
-			}
+		if (PullTrapPoint2 == 1) {
+			PullTrapLx[1] += 0.04;
+			Scalepos.PullScaleLx[1] -= 0.02f;
+			if (PullTrapLx[1] >= 3.0f)
+				PullTrapPoint2 = 0;
+		}
 
-			if (PullTrapPoint3 == 1)	{
-				PullTrapLx[2] += 0.04;
-				Scalepos.PullScaleLx[2] -= 0.02f;
-				if (PullTrapLx[2] >= 3.0f)
-					PullTrapPoint3 = 0;
-			}
-				
-			//R
-			if (PullTrapPoint4 == 0) {
-				PullTrapRx[0] += 0.8;
-				Scalepos.PullScaleRx[0] = 7.0f;
-				if (PullTrapRx[0] >= -1.0f)
-					PullTrapPoint4 = 1;
-			}
-			if (PullTrapPoint5 == 0) {
-				PullTrapRx[1] += 1.0;
-				Scalepos.PullScaleRx[1] = 7.0f;
-				if (PullTrapRx[1] >= -1.0f)
-					PullTrapPoint5 = 1;
-			}
-			if (PullTrapPoint6 == 0) {
-				PullTrapRx[2] += 0.65;
-				Scalepos.PullScaleRx[2] = 7.0f;
-				if (PullTrapRx[2] >= -1.0f)
-					PullTrapPoint6 = 1;
-			}
+		if (PullTrapPoint3 == 1) {
+			PullTrapLx[2] += 0.04;
+			Scalepos.PullScaleLx[2] -= 0.02f;
+			if (PullTrapLx[2] >= 3.0f)
+				PullTrapPoint3 = 0;
+		}
 
-			if (PullTrapPoint4 == 1) {
-				PullTrapRx[0] -= 0.04;
-				Scalepos.PullScaleRx[0] -= 0.02f;
-				if (PullTrapRx[0] <= -3.0f)
-					PullTrapPoint4 = 0;
-			}
+		//R
+		if (PullTrapPoint4 == 0) {
+			PullTrapRx[0] += 0.8;
+			Scalepos.PullScaleRx[0] = 7.0f;
+			if (PullTrapRx[0] >= -1.0f)
+				PullTrapPoint4 = 1;
+		}
+		if (PullTrapPoint5 == 0) {
+			PullTrapRx[1] += 1.0;
+			Scalepos.PullScaleRx[1] = 7.0f;
+			if (PullTrapRx[1] >= -1.0f)
+				PullTrapPoint5 = 1;
+		}
+		if (PullTrapPoint6 == 0) {
+			PullTrapRx[2] += 0.65;
+			Scalepos.PullScaleRx[2] = 7.0f;
+			if (PullTrapRx[2] >= -1.0f)
+				PullTrapPoint6 = 1;
+		}
 
-			if (PullTrapPoint5 == 1) {
-				PullTrapRx[1] -= 0.04;
-				Scalepos.PullScaleRx[1] -= 0.02f;
-				if (PullTrapRx[1] <= -3.0f)
-					PullTrapPoint5 = 0;
-			}
+		if (PullTrapPoint4 == 1) {
+			PullTrapRx[0] -= 0.04;
+			Scalepos.PullScaleRx[0] -= 0.02f;
+			if (PullTrapRx[0] <= -3.0f)
+				PullTrapPoint4 = 0;
+		}
 
-			if (PullTrapPoint6 == 1) {
-				PullTrapRx[2] -= 0.04;
-				Scalepos.PullScaleRx[2] -= 0.02f;
-				if (PullTrapRx[2] <= -3.0f)
-					PullTrapPoint6 = 0;
-			}
+		if (PullTrapPoint5 == 1) {
+			PullTrapRx[1] -= 0.04;
+			Scalepos.PullScaleRx[1] -= 0.02f;
+			if (PullTrapRx[1] <= -3.0f)
+				PullTrapPoint5 = 0;
+		}
+
+		if (PullTrapPoint6 == 1) {
+			PullTrapRx[2] -= 0.04;
+			Scalepos.PullScaleRx[2] -= 0.02f;
+			if (PullTrapRx[2] <= -3.0f)
+				PullTrapPoint6 = 0;
+		}
 	}
-	
+
 	AngleList.Radian += 20.234f;
 
-	if (TransList.T_Bodyz >= TransList.T_StageZ-6.0f && TransList.T_Bodyz <= TransList.T_StageZ + 13.0f)
+	if (TransList.T_Bodyz >= TransList.T_StageZ - 6.0f && TransList.T_Bodyz <= TransList.T_StageZ + 13.0f)
 	{
-		if (TransList.T_Bodyx >= TransList.T_StageX + 5.0f ||TransList.T_Bodyx <= TransList.T_StageX - 5.0f)
+		if (TransList.T_Bodyx >= TransList.T_StageX + 5.0f || TransList.T_Bodyx <= TransList.T_StageX - 5.0f)
 		{
 			TransList.T_Bodyy -= 0.2f;
 			TransList.T_ArmLegy -= 0.2f;
@@ -694,12 +675,23 @@ void timer(int value)
 		}
 	}
 
-	if (TransList.T_Bodyz >= TransList.T_Stage2ZA[0]) {
-		if (TransList.T_Bodyx >= TransList.T_Stage2X+5.0f || TransList.T_Bodyx <= TransList.T_Stage2X -5.0f)
+	if (TransList.T_Bodyz >= TransList.T_Stage2ZA[0] && TransList.T_Bodyz <= TransList.T_Stage2Z + 76.0f) {
+		if (TransList.T_Bodyx >= TransList.T_Stage2X + 5.0f || TransList.T_Bodyx <= TransList.T_Stage2X - 5.0f)
 		{
 			TransList.T_Bodyy -= 0.2f;
 			TransList.T_ArmLegy -= 0.2f;
 			TransList.T_Eyey -= 0.2f;
+		}
+	}
+
+	for (int i = 0; i < 6; i++)
+	{
+		if (TransList.T_Bodyy >= IceLocationy[i].y && TransList.T_Bodyx <= IceLocationx[i] + 1.5f && TransList.T_Bodyx >= IceLocationx[i] - 1.5f
+			&& TransList.T_Bodyz >= IceLocationz[i] - 1.5f && TransList.T_Bodyz <= IceLocationz[i] + 1.5f)
+		{
+			TransList.T_Bodyy -= 0.5f;
+			TransList.T_ArmLegy -= 0.5f;
+			TransList.T_Eyey -= 0.5f;
 		}
 	}
 	glutPostRedisplay();
@@ -770,7 +762,7 @@ void MainView()
 
 	//--------����
 	glm::mat4 Proj = glm::mat4(1.0f);
-	Proj = glm::perspective(glm::radians(60.0f), (float)Wwidth / Wheight, 0.1f, 100.0f);
+	Proj = glm::perspective(glm::radians(60.0f), (float)FRAME_WIDTH / FRAME_HEIGHT, 0.1f, 100.0f);
 	unsigned int ModelProjLocation = glGetUniformLocation(shaderID, "projectionTransform");
 	glUniformMatrix4fv(ModelProjLocation, 1, GL_FALSE, &Proj[0][0]);
 
@@ -791,13 +783,6 @@ void MainView()
 	glutSwapBuffers();
 }
 
-void Resize(int w, int h)
-{
-	glViewport(0, 0, w, h);
-	Wwidth = w;
-	Wheight = h;
-}
-
 void keyboardCall(unsigned char key, int x, int y)
 {
 	switch (key)
@@ -810,7 +795,7 @@ void keyboardCall(unsigned char key, int x, int y)
 		TransList.T_Bodyz += Movevalue;
 		TransList.T_ArmLegz += Movevalue;
 
-		if (TransList.T_Bodyz > TransList.T_StageZ + 70.0f && TransList.T_Bodyz < TransList.T_StageZ + 85.0f)
+		if (TransList.T_Bodyz > TransList.T_StageZ + 70.0f && TransList.T_Bodyz < TransList.T_StageZ + 80.0f)
 		{
 
 			TransList.T_Eyez += Movevalue;
@@ -830,7 +815,7 @@ void keyboardCall(unsigned char key, int x, int y)
 		TransList.T_Bodyz -= Movevalue;
 		TransList.T_ArmLegz -= Movevalue;
 		TransList.T_Cpaez -= Movevalue;
-		if (TransList.T_Bodyz > TransList.T_StageZ + 70.0f && TransList.T_Bodyz < TransList.T_StageZ + 85.0f)
+		if (TransList.T_Bodyz > TransList.T_StageZ + 70.0f && TransList.T_Bodyz < TransList.T_StageZ + 80.0f)
 		{
 
 			TransList.T_Eyez -= Movevalue;
@@ -893,17 +878,21 @@ void InitBuffer()
 {
 	glGenVertexArrays(26, VAO);
 
-	for (int i = 0; i < 25; i++)
+	for (int i = 0; i < 26; i++)
 	{
 		glBindVertexArray(VAO[i]);
+
 		glGenBuffers(3, &VBO[3 * i]);
+
 		glBindBuffer(GL_ARRAY_BUFFER, VBO[3 * i]);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec4) * Vertex[i].size(), &Vertex[i][0], GL_STATIC_DRAW);
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec4), (void*)0);
+
 		glEnableVertexAttribArray(0);
 		glBindBuffer(GL_ARRAY_BUFFER, VBO[3 * i + 1]);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec4) * Nomal[i].size(), &Nomal[i][0], GL_STATIC_DRAW);
 		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec4), (void*)0);
+
 		glEnableVertexAttribArray(1);
 		glBindBuffer(GL_ARRAY_BUFFER, VBO[3 * i + 2]);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * Texture[i].size(), &Texture[i][0], GL_STATIC_DRAW);
@@ -916,37 +905,28 @@ void InitBuffer()
 
 void ObjList()
 {
-	readTriangleObj("plane3.obj", Vertex[0], Texture[0], Nomal[0]);
-	readTriangleObj("plane3.obj", Vertex[9], Texture[9], Nomal[9]);
 
+	readTriangleObj("Model/Final/plane3.obj", Vertex[0], Texture[0], Nomal[0]);
+	readTriangleObj("Model/Final/Sphere2.obj", Vertex[1], Texture[1], Nomal[1]);
+	readTriangleObj("Model/Final/cube3_.obj", Vertex[2], Texture[2], Nomal[2]);
+	readTriangleObj("Model/Final/Sphere2.obj", Vertex[3], Texture[3], Nomal[3]);
+	readTriangleObj("Model/Final/plane3.obj", Vertex[4], Texture[4], Nomal[4]);
+	readTriangleObj("Model/Final/plane3.obj", Vertex[5], Texture[5], Nomal[5]);
 
-	readTriangleObj("cube3_.obj", Vertex[2], Texture[2], Nomal[2]);
-	readTriangleObj("Sphere2.obj", Vertex[3], Texture[3], Nomal[3]);
-	readTriangleObj("plane3.obj", Vertex[4], Texture[4], Nomal[4]);
+	for (int i = 6; i < 13; i++)
+		readTriangleObj("Model/Final/Sphere2.obj", Vertex[i], Texture[i], Nomal[i]);
 
-	readTriangleObj("Sphere2.obj", Vertex[1], Texture[1], Nomal[1]);
-	for (int i = 5; i < 9; i++)
-	{
-		readTriangleObj("Sphere2.obj", Vertex[i], Texture[i], Nomal[i]);
-	}
-	for (int i = 10; i < 13; i++)
-	{
-		readTriangleObj("Sphere2.obj", Vertex[i], Texture[i], Nomal[i]);
-	}
-
-	readTriangleObj("hely.obj", Vertex[13], Texture[13], Nomal[13]);
-	readTriangleObj("hely.obj", Vertex[14], Texture[14], Nomal[14]);
-	readTriangleObj("cube3_.obj", Vertex[15], Texture[15], Nomal[15]);
-	readTriangleObj("cube3_.obj", Vertex[16], Texture[16], Nomal[16]);
-	readTriangleObj("hely.obj", Vertex[17], Texture[17], Nomal[17]);
-	readTriangleObj("crown.obj", Vertex[18], Texture[18], Nomal[18]);
-	readTriangleObj("sword.obj", Vertex[19], Texture[19], Nomal[19]);
-
-	readTriangleObj("plane3.obj", Vertex[20], Texture[20], Nomal[20]);
-	readTriangleObj("cube3_.obj", Vertex[21], Texture[21], Nomal[21]);
-	readTriangleObj("cube3_.obj", Vertex[22], Texture[22], Nomal[22]);
-	readTriangleObj("cube3_.obj", Vertex[23], Texture[23], Nomal[23]);
-	readTriangleObj("fallingice.obj", Vertex[24], Texture[24], Nomal[24]);
+	readTriangleObj("Model/Final/hely.obj", Vertex[13], Texture[13], Nomal[13]);
+	readTriangleObj("Model/Final/hely.obj", Vertex[14], Texture[14], Nomal[14]);
+	readTriangleObj("Model/Final/cube3_.obj", Vertex[15], Texture[15], Nomal[15]);
+	readTriangleObj("Model/Final/cube3_.obj", Vertex[16], Texture[16], Nomal[16]);
+	readTriangleObj("Model/Final/hely.obj", Vertex[17], Texture[17], Nomal[17]);
+	readTriangleObj("Model/Final/crown.obj", Vertex[18], Texture[18], Nomal[18]);
+	readTriangleObj("Model/Final/sword.obj", Vertex[19], Texture[19], Nomal[19]);
+	readTriangleObj("Model/Final/plane3.obj", Vertex[20], Texture[20], Nomal[20]);
+	for (int i = 21; i < 24; i++)
+		readTriangleObj("Model/Final/cube3_.obj", Vertex[i], Texture[i], Nomal[i]);
+	readTriangleObj("Model/Final/fallingice.obj", Vertex[24], Texture[24], Nomal[24]);
 }
 
 void drawscene()
@@ -996,7 +976,7 @@ void drawscene()
 		glDrawArrays(GL_TRIANGLES, 0, Vertex[23].size());
 	}
 
-	for (int i = 0; i < 8; i++)
+	for (int i = 0; i < 6; i++)
 	{
 		glBindVertexArray(VAO[24]);
 		unsigned int ICEBlendCheck = glGetUniformLocation(shaderID, "Blendcheck");
@@ -1005,7 +985,7 @@ void drawscene()
 		glBindTexture(GL_TEXTURE_2D, texture[6]);
 		glm::mat4 ICE = glm::mat4(1.0f);
 		ICE = glm::translate(ICE, glm::vec3(IceLocationx[i], IceLocationy[i].y, IceLocationz[i]));
-		ICE = glm::scale(ICE, glm::vec3(14.0f, 10.0f, 14.0f));
+		ICE = glm::scale(ICE, glm::vec3(20.0f, 10.0f, 20.0f));
 		unsigned int ICELocation = glGetUniformLocation(shaderID, "modelTransform");
 		glUniformMatrix4fv(ICELocation, 1, GL_FALSE, glm::value_ptr(ICE));
 		glm::mat4 ICENormalmodel = glm::mat4(1.0f);
@@ -1015,6 +995,7 @@ void drawscene()
 		unsigned int ICEColorLocation = glGetUniformLocation(shaderID, "objColor");
 		glUniform3f(ICEColorLocation, 1, 0.388235, 0.278431);
 		glDrawArrays(GL_TRIANGLES, 0, Vertex[24].size());
+
 	}
 	//--------STAGE1
 	{
@@ -1035,7 +1016,7 @@ void drawscene()
 		glUniformMatrix4fv(StageNormalMatrixLocation, 1, GL_FALSE, glm::value_ptr(StageNormalMatrix));
 		glDrawArrays(GL_TRIANGLES, 0, Vertex[4].size());
 
-		glBindVertexArray(VAO[9]);
+		glBindVertexArray(VAO[5]);
 		unsigned int Stage1BlendCheck = glGetUniformLocation(shaderID, "Blendcheck");
 		glUniform1i(Stage1BlendCheck, 2);
 		glActiveTexture(GL_TEXTURE0);
@@ -1050,7 +1031,7 @@ void drawscene()
 		glm::mat4 Stage1NormalMatrix = glm::mat4(1.0f);
 		unsigned int Stage1NormalMatrixLocation = glGetUniformLocation(shaderID, "normalTransform");
 		glUniformMatrix4fv(Stage1NormalMatrixLocation, 1, GL_FALSE, glm::value_ptr(Stage1NormalMatrix));
-		glDrawArrays(GL_TRIANGLES, 0, Vertex[9].size());
+		glDrawArrays(GL_TRIANGLES, 0, Vertex[5].size());
 
 		glBindVertexArray(VAO[15]);
 		unsigned int DoorBlendCheck = glGetUniformLocation(shaderID, "Blendcheck");
@@ -1101,25 +1082,25 @@ void drawscene()
 		glBindVertexArray(VAO[4]);
 		for (size_t i = 0; i < 3; i++)
 		{
-		unsigned int StageBlendCheck = glGetUniformLocation(shaderID, "Blendcheck");
-		glUniform1i(StageBlendCheck, 2);
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, texture[5]);
-		glUniform1i(glGetUniformLocation(shaderID, "textureC"), 0);
-		glm::mat4 StageTrasMatrix = glm::mat4(1.0f);
-		StageTrasMatrix = glm::translate(StageTrasMatrix, glm::vec3(TransList.T_Stage2X, TransList.T_Stage2Y, TransList.T_Stage2ZA[i]));
-		StageTrasMatrix = glm::rotate(StageTrasMatrix, glm::radians(AngleList.StageAngle), glm::vec3(0.0f, 1.0f, 0.0f));
-		StageTrasMatrix = glm::scale(StageTrasMatrix, glm::vec3(11.0, 1.0, 15.0));
-		unsigned int StageTransMatrixLocation = glGetUniformLocation(shaderID, "modelTransform");
-		glUniformMatrix4fv(StageTransMatrixLocation, 1, GL_FALSE, glm::value_ptr(StageTrasMatrix));
-		glm::mat4 StageNormalMatrix = glm::mat4(1.0f);
-		unsigned int StageNormalMatrixLocation = glGetUniformLocation(shaderID, "normalTransform");
-		glUniformMatrix4fv(StageNormalMatrixLocation, 1, GL_FALSE, glm::value_ptr(StageNormalMatrix));
-		glDrawArrays(GL_TRIANGLES, 0, Vertex[4].size());
+			unsigned int StageBlendCheck = glGetUniformLocation(shaderID, "Blendcheck");
+			glUniform1i(StageBlendCheck, 2);
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, texture[5]);
+			glUniform1i(glGetUniformLocation(shaderID, "textureC"), 0);
+			glm::mat4 StageTrasMatrix = glm::mat4(1.0f);
+			StageTrasMatrix = glm::translate(StageTrasMatrix, glm::vec3(TransList.T_Stage2X, TransList.T_Stage2Y, TransList.T_Stage2ZA[i]));
+			StageTrasMatrix = glm::rotate(StageTrasMatrix, glm::radians(AngleList.StageAngle), glm::vec3(0.0f, 1.0f, 0.0f));
+			StageTrasMatrix = glm::scale(StageTrasMatrix, glm::vec3(11.0, 1.0, 15.0));
+			unsigned int StageTransMatrixLocation = glGetUniformLocation(shaderID, "modelTransform");
+			glUniformMatrix4fv(StageTransMatrixLocation, 1, GL_FALSE, glm::value_ptr(StageTrasMatrix));
+			glm::mat4 StageNormalMatrix = glm::mat4(1.0f);
+			unsigned int StageNormalMatrixLocation = glGetUniformLocation(shaderID, "normalTransform");
+			glUniformMatrix4fv(StageNormalMatrixLocation, 1, GL_FALSE, glm::value_ptr(StageNormalMatrix));
+			glDrawArrays(GL_TRIANGLES, 0, Vertex[4].size());
 		}
 
 
-		glBindVertexArray(VAO[9]);
+		glBindVertexArray(VAO[5]);
 		unsigned int Stage1BlendCheck = glGetUniformLocation(shaderID, "Blendcheck");
 		glUniform1i(Stage1BlendCheck, 2);
 		glActiveTexture(GL_TEXTURE0);
@@ -1134,7 +1115,7 @@ void drawscene()
 		glm::mat4 Stage1NormalMatrix = glm::mat4(1.0f);
 		unsigned int Stage1NormalMatrixLocation = glGetUniformLocation(shaderID, "normalTransform");
 		glUniformMatrix4fv(Stage1NormalMatrixLocation, 1, GL_FALSE, glm::value_ptr(Stage1NormalMatrix));
-		glDrawArrays(GL_TRIANGLES, 0, Vertex[9].size());
+		glDrawArrays(GL_TRIANGLES, 0, Vertex[5].size());
 
 		glBindVertexArray(VAO[20]);
 		unsigned int Stage1BlendCheck2 = glGetUniformLocation(shaderID, "Blendcheck");
@@ -1173,7 +1154,7 @@ void drawscene()
 	glDrawArrays(GL_TRIANGLES, 0, Vertex[1].size());
 
 
-	glBindVertexArray(VAO[5]);
+	glBindVertexArray(VAO[6]);
 	unsigned int ArmLegBlendCheck = glGetUniformLocation(shaderID, "Blendcheck");
 	glUniform1i(ArmLegBlendCheck, 0);
 	glm::mat4 LEFTARM = glm::mat4(1.0f);
@@ -1197,7 +1178,7 @@ void drawscene()
 	glUniformMatrix4fv(LEFTARMNormalLocation, 1, GL_FALSE, glm::value_ptr(LEFTARMNormal));
 	unsigned int LEFTARMfragLocation = glGetUniformLocation(shaderID, "objColor");
 	glUniform3f(LEFTARMfragLocation, 0.847f, 0.45f, 0.628f);
-	glDrawArrays(GL_TRIANGLES, 0, Vertex[5].size());
+	glDrawArrays(GL_TRIANGLES, 0, Vertex[6].size());
 
 
 	glBindVertexArray(VAO[6]);
@@ -1450,7 +1431,7 @@ void drawscene()
 		unsigned int PullTrapBlendCheck = glGetUniformLocation(shaderID, "Blendcheck");
 		glUniform1i(PullTrapBlendCheck, 2);
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, texture[4]);
+		glBindTexture(GL_TEXTURE_2D, texture[8]);
 		glUniform1i(glGetUniformLocation(shaderID, "textureC"), 0);
 		glm::mat4 PullTrap = glm::mat4(1.0f);
 		PullTrap = glm::translate(PullTrap, glm::vec3(PullTrapLx[i], TransList.T_StageY + 1.0f, PullTrapLz[i]));
@@ -1466,7 +1447,7 @@ void drawscene()
 		unsigned int PullTrap2Check = glGetUniformLocation(shaderID, "Blendcheck");
 		glUniform1i(PullTrap2Check, 2);
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, texture[4]);
+		glBindTexture(GL_TEXTURE_2D, texture[8]);
 		glUniform1i(glGetUniformLocation(shaderID, "textureC"), 0);
 		glm::mat4 PullTrap2Matrix = glm::mat4(1.0f);
 		PullTrap2Matrix = glm::translate(PullTrap2Matrix, glm::vec3(PullTrapRx[i], TransList.T_StageY + 1.0f, PullTrapRz[i]));
@@ -1480,9 +1461,9 @@ void drawscene()
 
 		if (PullTrapRx[i] + 4.0f >= TransList.T_Bodyx && PullTrapRz[i] - 0.5f <= TransList.T_Bodyz && PullTrapRz[i] + 0.5f >= TransList.T_Bodyz)
 		{
-				TransList.T_Bodyx += 1.5f;
-				TransList.T_ArmLegx += 1.5f;
-				TransList.T_Eyex += 1.5f;
+			TransList.T_Bodyx += 1.5f;
+			TransList.T_ArmLegx += 1.5f;
+			TransList.T_Eyex += 1.5f;
 		}
 		if (PullTrapLx[i] - 4.0f <= TransList.T_Bodyx && PullTrapLz[i] - 0.5f <= TransList.T_Bodyz && PullTrapLz[i] + 0.5f >= TransList.T_Bodyz)
 		{
@@ -1490,7 +1471,7 @@ void drawscene()
 			TransList.T_ArmLegx -= 1.5f;
 			TransList.T_Eyex -= 1.5f;
 		}
-	
+
 	}
 
 
@@ -1501,7 +1482,7 @@ void drawscene()
 		unsigned int FlagBlendCheck = glGetUniformLocation(shaderID, "Blendcheck");
 		glUniform1i(FlagBlendCheck, 2);
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, texture[3]);
+		glBindTexture(GL_TEXTURE_2D, texture[7]);
 		glUniform1i(glGetUniformLocation(shaderID, "textureC"), 0);
 		glm::mat4 FlagTrasMatrix = glm::mat4(1.0f);
 		FlagTrasMatrix = glm::translate(FlagTrasMatrix, glm::vec3(Potalx[i], TransList.T_StageY, Potalz[i]));
@@ -1514,18 +1495,18 @@ void drawscene()
 		glUniformMatrix4fv(FlagNormalMatrixLocation, 1, GL_FALSE, glm::value_ptr(FlagNormalMatrix));
 		glDrawArrays(GL_TRIANGLES, 0, Vertex[17].size());
 
-			if (TransList.T_Bodyz >= (TransList.T_StageZ + 21.0f) - 0.5f && TransList.T_Bodyz <= (TransList.T_StageZ + 21.0f) + 0.5f 
-				&& TransList.T_Bodyx >= (TransList.T_StageX + 28.0f) - 0.5f && TransList.T_Bodyx <= (TransList.T_StageX + 28.0f) + 0.5f)
-			{
-				TransList.T_Bodyx = Potalx[1];
-				TransList.T_ArmLegx = Potalx[1];
-				TransList.T_Eyex = Potalx[1];
-				TransList.T_Bodyz = Potalz[1];
-				TransList.T_ArmLegz = TransList.T_Bodyz + 2.0f;
-				TransList.T_Eyez = TransList.T_Bodyz;
-				AngleList.anglecamera += 15.0f;
-				Opencheck = true;
-			}
+		if (TransList.T_Bodyz >= (TransList.T_StageZ + 21.0f) - 0.5f && TransList.T_Bodyz <= (TransList.T_StageZ + 21.0f) + 0.5f
+			&& TransList.T_Bodyx >= (TransList.T_StageX + 28.0f) - 0.5f && TransList.T_Bodyx <= (TransList.T_StageX + 28.0f) + 0.5f)
+		{
+			TransList.T_Bodyx = Potalx[1];
+			TransList.T_ArmLegx = Potalx[1];
+			TransList.T_Eyex = Potalx[1];
+			TransList.T_Bodyz = Potalz[1];
+			TransList.T_ArmLegz = TransList.T_Bodyz + 2.0f;
+			TransList.T_Eyez = TransList.T_Bodyz;
+			AngleList.anglecamera += 15.0f;
+			Opencheck = true;
+		}
 	}
 
 }
@@ -1534,14 +1515,14 @@ void drawscene()
 void initTexture()
 {
 
-	glGenTextures(7, &texture[0]);
+	glGenTextures(9, &texture[0]);
 	glBindTexture(GL_TEXTURE_2D, texture[0]);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	int widthImage, heightImage, numberOfChannel;
-	unsigned char* data = stbi_load("fireball.jpg", &widthImage, &heightImage, &numberOfChannel, 0);
+	unsigned char* data = stbi_load("Resource/Final/fireball.jpg", &widthImage, &heightImage, &numberOfChannel, 0);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, widthImage, heightImage, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
 	glGenerateMipmap(GL_TEXTURE_2D);
 	stbi_image_free(data);
@@ -1552,7 +1533,7 @@ void initTexture()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	int PYwidthImage, PYheightImage, PYnumberOfChannel;
-	unsigned char* PYdata = stbi_load("123.jpg", &PYwidthImage, &PYheightImage, &PYnumberOfChannel, 0);
+	unsigned char* PYdata = stbi_load("Resource/Final/123.jpg", &PYwidthImage, &PYheightImage, &PYnumberOfChannel, 0);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, PYwidthImage, PYheightImage, 0, GL_RGB, GL_UNSIGNED_BYTE, PYdata);
 	glGenerateMipmap(GL_TEXTURE_2D);
 	stbi_image_free(PYdata);
@@ -1563,7 +1544,7 @@ void initTexture()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	int BackwidthImage, BackheightImage, BacknumberOfChannel;
-	unsigned char* Backdata = stbi_load("FireHely.jpg", &BackwidthImage, &BackheightImage, &BacknumberOfChannel, 0);
+	unsigned char* Backdata = stbi_load("Resource/Final/FireHely.jpg", &BackwidthImage, &BackheightImage, &BacknumberOfChannel, 0);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, BackwidthImage, BackheightImage, 0, GL_RGB, GL_UNSIGNED_BYTE, Backdata);
 	glGenerateMipmap(GL_TEXTURE_2D);
 	stbi_image_free(Backdata);
@@ -1574,7 +1555,7 @@ void initTexture()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	int TrapwidthImage, TrapheightImage, TrapnumberOfChannel;
-	unsigned char* Trap = stbi_load("Helyimage.jpg", &TrapwidthImage, &TrapheightImage, &TrapnumberOfChannel, 0);
+	unsigned char* Trap = stbi_load("Resource/Final/Helyimage.jpg", &TrapwidthImage, &TrapheightImage, &TrapnumberOfChannel, 0);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, TrapwidthImage, TrapheightImage, 0, GL_RGB, GL_UNSIGNED_BYTE, Trap);
 	glGenerateMipmap(GL_TEXTURE_2D);
 	stbi_image_free(Trap);
@@ -1585,7 +1566,7 @@ void initTexture()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	int TailWidthImage, TailHeightImage, TailnumberOfChannel;
-	unsigned char* TailData = stbi_load("tail.jpg", &TailWidthImage, &TailHeightImage, &TailnumberOfChannel, 0);
+	unsigned char* TailData = stbi_load("Resource/Final/tail.jpg", &TailWidthImage, &TailHeightImage, &TailnumberOfChannel, 0);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, TailWidthImage, TailHeightImage, 0, GL_RGB, GL_UNSIGNED_BYTE, TailData);
 	glGenerateMipmap(GL_TEXTURE_2D);
 	stbi_image_free(TailData);
@@ -1596,7 +1577,7 @@ void initTexture()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	int Stage2WidthImage, Stage2HeightImage, Stage2numberOfChannel;
-	unsigned char* Stage2Data = stbi_load("Stage2Tail.jpg", &Stage2WidthImage, &Stage2HeightImage, &Stage2numberOfChannel, 0);
+	unsigned char* Stage2Data = stbi_load("Resource/Final/Stage2Tail.jpg", &Stage2WidthImage, &Stage2HeightImage, &Stage2numberOfChannel, 0);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, Stage2WidthImage, Stage2HeightImage, 0, GL_RGB, GL_UNSIGNED_BYTE, Stage2Data);
 	glGenerateMipmap(GL_TEXTURE_2D);
 	stbi_image_free(Stage2Data);
@@ -1607,9 +1588,31 @@ void initTexture()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	int IceWidthImage, IceHeightImage, IcenumberOfChannel;
-	unsigned char* IceData = stbi_load("ice.jpg", &IceWidthImage, &IceHeightImage, &IcenumberOfChannel, 0);
+	unsigned char* IceData = stbi_load("Resource/Final/ice.jpg", &IceWidthImage, &IceHeightImage, &IcenumberOfChannel, 0);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, IceWidthImage, IceHeightImage, 0, GL_RGB, GL_UNSIGNED_BYTE, IceData);
 	glGenerateMipmap(GL_TEXTURE_2D);
 	stbi_image_free(IceData);
+
+	glBindTexture(GL_TEXTURE_2D, texture[7]);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	int  PotalWidthImage, PotalHeightImage, PotalnumberOfChannel;
+	unsigned char* PotalData = stbi_load("Resource/Final/Potalimage.jpg", &PotalWidthImage, &PotalHeightImage, &PotalnumberOfChannel, 0);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, PotalWidthImage, PotalHeightImage, 0, GL_RGB, GL_UNSIGNED_BYTE, PotalData);
+	glGenerateMipmap(GL_TEXTURE_2D);
+	stbi_image_free(PotalData);
+
+	glBindTexture(GL_TEXTURE_2D, texture[8]);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	int  PunchWidthImage, PunchHeightImage, PunchnumberOfChannel;
+	unsigned char* PunchData = stbi_load("Resource/Final/Punchimage.jpg", &PunchWidthImage, &PunchHeightImage, &PunchnumberOfChannel, 0);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, PunchWidthImage, PunchHeightImage, 0, GL_RGB, GL_UNSIGNED_BYTE, PunchData);
+	glGenerateMipmap(GL_TEXTURE_2D);
+	stbi_image_free(PunchData);
 
 }

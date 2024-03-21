@@ -1,0 +1,60 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Load">
+      <UniqueIdentifier>{20d08339-89cd-4e43-86e3-3029cde985b7}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="FINAL_TEAMPROJECT.cpp" />
+    <ClCompile Include="GL-25.cpp" />
+    <ClCompile Include="filetobuf.cpp">
+      <Filter>Load</Filter>
+    </ClCompile>
+    <ClCompile Include="readobjNomal.cpp">
+      <Filter>Load</Filter>
+    </ClCompile>
+    <ClCompile Include="readTriangleObj.cpp">
+      <Filter>Load</Filter>
+    </ClCompile>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>Load</Filter>
+    </ClCompile>
+    <ClCompile Include="GL-24.cpp" />
+    <ClCompile Include="GL-20.cpp" />
+    <ClCompile Include="GL-27.cpp" />
+    <ClCompile Include="GL-28.cpp" />
+    <ClCompile Include="GL-29.cpp" />
+    <ClCompile Include="GL-30.cpp" />
+    <ClCompile Include="GL-Semi_1.cpp" />
+    <ClCompile Include="GL-13.cpp" />
+    <ClCompile Include="GL-14.cpp" />
+    <ClCompile Include="GL-15.cpp" />
+    <ClCompile Include="GL-16.cpp" />
+    <ClCompile Include="GL-18.cpp" />
+    <ClCompile Include="GL-19.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="_makeshader.h">
+      <Filter>Load</Filter>
+    </ClInclude>
+    <ClInclude Include="filetobuf.h">
+      <Filter>Load</Filter>
+    </ClInclude>
+    <ClInclude Include="ObjRead.h">
+      <Filter>Load</Filter>
+    </ClInclude>
+    <ClInclude Include="readobjNomal.h">
+      <Filter>Load</Filter>
+    </ClInclude>
+    <ClInclude Include="readTriangleObj.h">
+      <Filter>Load</Filter>
+    </ClInclude>
+    <ClInclude Include="stb_image.h">
+      <Filter>Load</Filter>
+    </ClInclude>
+    <ClInclude Include="stdafx.h">
+      <Filter>Load</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
