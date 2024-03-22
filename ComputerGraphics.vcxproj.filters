@@ -33,6 +33,7 @@
     <ClCompile Include="GL-16.cpp" />
     <ClCompile Include="GL-18.cpp" />
     <ClCompile Include="GL-19.cpp" />
+    <ClCompile Include="GL-Semi_2.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="_makeshader.h">

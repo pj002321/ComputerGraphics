@@ -18,7 +18,7 @@ GLuint shaderID;
 //Vector
 vector<glm::vec4>ObjNomarVal[38];
 vector<glm::vec4>ObjVertexVal[38];
-glm::vec3 LightColor = glm::vec3(0.903922, 0.852941, 0.790196);
+glm::vec3 LightColor = glm::vec3(0.903922,0.852941,0.790196);
 
 
 //Check
@@ -254,9 +254,9 @@ GLvoid InitBuffer()
 
 }
 
-void SnowPlay()
+void SnowPlay() 
 {
-	for (int i = 0; i < 50; i++)
+	for (int i = 0; i < 50; i++) 
 	{
 		random_device rd;
 		default_random_engine dre(rd());
@@ -365,7 +365,7 @@ void drawScene()
 	unsigned int BaseobjfragLocation = glGetUniformLocation(shaderID, "objColor");
 	glUniform3f(BaseobjfragLocation, 0.933333f, 0.913725f, 0.913725f);
 	glDrawArrays(GL_TRIANGLES, 0, ObjVertexVal[0].size());
-	if (TransList.T_Bodyx <= -5.8f) {
+	if (TransList.T_Bodyx<=-5.8f) {
 		TransList.T_Bodyx += 0.41f; TransList.T_ArmLegx += 0.41f;
 	}
 	if (TransList.T_Bodyx >= 5.8f) {
@@ -392,7 +392,7 @@ void drawScene()
 	unsigned int LightBoxNormalmodelLocation = glGetUniformLocation(shaderID, "normaltransform");
 	glUniformMatrix4fv(LightBoxNormalmodelLocation, 1, GL_FALSE, glm::value_ptr(LightBoxNormalmodel));
 	unsigned int LightBoxColorLocation = glGetUniformLocation(shaderID, "objColor");
-	glUniform3f(LightBoxColorLocation, 0.933333, 0.866667, 0.509804);
+	glUniform3f(LightBoxColorLocation, 0.933333	,0.866667,0.509804);
 	glDrawArrays(GL_TRIANGLES, 0, ObjVertexVal[1].size());
 
 
@@ -419,7 +419,7 @@ void drawScene()
 		transcheck4 = 1;
 		glBindVertexArray(VAO[29]);//VAO29
 		glm::mat4 RobotBody = glm::mat4(1.0f);
-		RobotBody = glm::translate(RobotBody, glm::vec3(TransList.T_r4x, TransList.T_r4y - 0.1f, TransList.T_r4z));
+		RobotBody = glm::translate(RobotBody, glm::vec3(TransList.T_r4x, TransList.T_r4y - 0.1f, TransList.T_r4z ));
 		RobotBody = glm::rotate(RobotBody, glm::radians(AngleList.BodyAngle), glm::vec3(0.0f, 1.0f, 0.0f));
 		RobotBody = glm::scale(RobotBody, glm::vec3(1.0f, 1.5f, 1.0f));
 		unsigned int RobotBodyLocation = glGetUniformLocation(shaderID, "modeltransform");
@@ -458,7 +458,7 @@ void drawScene()
 
 		glBindVertexArray(VAO[31]);//VAO31
 		glm::mat4 RIGHTARM = glm::mat4(1.0f);
-		RIGHTARM = glm::translate(RIGHTARM, glm::vec3(TransList.T_r4x - 0.15f, TransList.T_r4y + 0.2f, TransList.T_r4z + 0.1f));
+		RIGHTARM = glm::translate(RIGHTARM, glm::vec3(TransList.T_r4x-0.15f, TransList.T_r4y + 0.2f, TransList.T_r4z+0.1f));
 		RIGHTARM = glm::rotate(RIGHTARM, glm::radians(AngleList.ArmAngle), glm::vec3(0.0f, 1.0f, 0.0f));
 		RIGHTARM = glm::translate(RIGHTARM, glm::vec3(-0.18f, 0.0f, -0.2f));
 		if (Mainswingchk == 1) {
@@ -482,7 +482,7 @@ void drawScene()
 
 		glBindVertexArray(VAO[32]);//VAO32
 		glm::mat4 LEFTLEG = glm::mat4(1.0f);
-		LEFTLEG = glm::translate(LEFTLEG, glm::vec3(TransList.T_r4x, TransList.T_r4y - 0.3f, TransList.T_r4z));
+		LEFTLEG = glm::translate(LEFTLEG, glm::vec3(TransList.T_r4x , TransList.T_r4y - 0.3f, TransList.T_r4z));
 		LEFTLEG = glm::rotate(LEFTLEG, glm::radians(AngleList.ArmAngle), glm::vec3(0.0f, 1.0f, 0.0f));
 		LEFTLEG = glm::translate(LEFTLEG, glm::vec3(0.08f, 0.0f, 0.1f));
 		if (Mainswingchk == 1) {
@@ -505,7 +505,7 @@ void drawScene()
 
 		glBindVertexArray(VAO[33]);//VAO33
 		glm::mat4 RIGHTLEG = glm::mat4(1.0f);
-		RIGHTLEG = glm::translate(RIGHTLEG, glm::vec3(TransList.T_r4x - 0.1f, TransList.T_r4y - 0.3f, TransList.T_r4z));
+		RIGHTLEG = glm::translate(RIGHTLEG, glm::vec3(TransList.T_r4x-0.1f, TransList.T_r4y - 0.3f, TransList.T_r4z));
 		RIGHTLEG = glm::rotate(RIGHTLEG, glm::radians(AngleList.ArmAngle), glm::vec3(0.0f, 1.0f, 0.0f));
 		RIGHTLEG = glm::translate(RIGHTLEG, glm::vec3(-0.08f, 0.0f, -0.1f));
 		if (Mainswingchk == 1)
@@ -548,10 +548,10 @@ void drawScene()
 
 	}
 
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-		// 3.오른쪽 상단
-		//-----------충돌
+	// 3.오른쪽 상단
+	//-----------충돌
 	if (TransList.T_Bodyx <= TransList.T_x - 3.5f && TransList.T_Bodyx >= TransList.T_x - 5.0f && TransList.T_Bodyz >= TransList.T_z + 3.5 && TransList.T_Bodyz <= TransList.T_z + 4.5) {
 		Change3 = true;
 		transcheck3 = 1;
@@ -607,7 +607,7 @@ void drawScene()
 
 		glBindVertexArray(VAO[26]);//VAO26
 		glm::mat4 RIGHTARM = glm::mat4(1.0f);
-		RIGHTARM = glm::translate(RIGHTARM, glm::vec3(TransList.T_r3x - 0.15, TransList.T_r3y + 0.2f, TransList.T_r3z + 0.1f));
+		RIGHTARM = glm::translate(RIGHTARM, glm::vec3(TransList.T_r3x -0.15, TransList.T_r3y + 0.2f, TransList.T_r3z +0.1f));
 		RIGHTARM = glm::rotate(RIGHTARM, glm::radians(AngleList.ArmAngle), glm::vec3(0.0f, 1.0f, 0.0f));
 		RIGHTARM = glm::translate(RIGHTARM, glm::vec3(-0.18f, 0.0f, -0.2f));
 
@@ -630,7 +630,7 @@ void drawScene()
 
 		glBindVertexArray(VAO[27]);//VAO27
 		glm::mat4 LEFTLEG = glm::mat4(1.0f);
-		LEFTLEG = glm::translate(LEFTLEG, glm::vec3(TransList.T_r3x, TransList.T_r3y - 0.3f, TransList.T_r3z));
+		LEFTLEG = glm::translate(LEFTLEG, glm::vec3(TransList.T_r3x , TransList.T_r3y - 0.3f, TransList.T_r3z ));
 		LEFTLEG = glm::rotate(LEFTLEG, glm::radians(AngleList.ArmAngle), glm::vec3(0.0f, 1.0f, 0.0f));
 		LEFTLEG = glm::translate(LEFTLEG, glm::vec3(0.08f, 0.0f, 0.1f));
 
@@ -653,7 +653,7 @@ void drawScene()
 
 		glBindVertexArray(VAO[28]);//VAO28
 		glm::mat4 RIGHTLEG = glm::mat4(1.0f);
-		RIGHTLEG = glm::translate(RIGHTLEG, glm::vec3(TransList.T_r3x, TransList.T_r3y - 0.3f, TransList.T_r3z));
+		RIGHTLEG = glm::translate(RIGHTLEG, glm::vec3(TransList.T_r3x , TransList.T_r3y - 0.3f, TransList.T_r3z ));
 		RIGHTLEG = glm::rotate(RIGHTLEG, glm::radians(AngleList.ArmAngle), glm::vec3(0.0f, 1.0f, 0.0f));
 		RIGHTLEG = glm::translate(RIGHTLEG, glm::vec3(-0.08f, 0.0f, -0.1f));
 
@@ -695,10 +695,10 @@ void drawScene()
 	}
 
 
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-		// 2.오른쪽 하단
-		//-----------충돌
+	// 2.오른쪽 하단
+	//-----------충돌
 	if (TransList.T_Bodyx <= TransList.T_x - 3.5f && TransList.T_Bodyx >= TransList.T_x - 5.0f && TransList.T_Bodyz >= TransList.T_z - 4.5f && TransList.T_Bodyz <= TransList.T_z - 3.0f)
 	{
 		Change2 = true;
@@ -720,7 +720,7 @@ void drawScene()
 		{
 			glBindVertexArray(VAO[19]);//VAO19
 			glm::mat4 RobotBody = glm::mat4(1.0f);
-			RobotBody = glm::translate(RobotBody, glm::vec3(TransList.T_r2x, TransList.T_r2y - 0.1f, TransList.T_r2z));
+			RobotBody = glm::translate(RobotBody, glm::vec3(TransList.T_r2x , TransList.T_r2y - 0.1f, TransList.T_r2z ));
 			RobotBody = glm::rotate(RobotBody, glm::radians(AngleList.BodyAngle), glm::vec3(0.0f, 1.0f, 0.0f));
 			RobotBody = glm::scale(RobotBody, glm::vec3(1.0f, 1.5f, 1.0f));
 			unsigned int RobotBodyLocation = glGetUniformLocation(shaderID, "modeltransform");
@@ -758,7 +758,7 @@ void drawScene()
 
 			glBindVertexArray(VAO[21]);//VAO21
 			glm::mat4 RIGHTARM = glm::mat4(1.0f);
-			RIGHTARM = glm::translate(RIGHTARM, glm::vec3(TransList.T_r2x - 0.15f, TransList.T_r2y + 0.2f, TransList.T_r2z + 0.2f));
+			RIGHTARM = glm::translate(RIGHTARM, glm::vec3(TransList.T_r2x -0.15f, TransList.T_r2y + 0.2f, TransList.T_r2z +0.2f));
 			RIGHTARM = glm::rotate(RIGHTARM, glm::radians(AngleList.ArmAngle), glm::vec3(0.0f, 1.0f, 0.0f));
 			RIGHTARM = glm::translate(RIGHTARM, glm::vec3(-0.18f, 0.0f, -0.2f));
 			if (Mainswingchk == 1) {
@@ -803,7 +803,7 @@ void drawScene()
 
 			glBindVertexArray(VAO[23]);//VAO23
 			glm::mat4 RIGHTLEG = glm::mat4(1.0f);
-			RIGHTLEG = glm::translate(RIGHTLEG, glm::vec3(TransList.T_r2x - 0.1f, TransList.T_r2y - 0.3f, TransList.T_r2z));
+			RIGHTLEG = glm::translate(RIGHTLEG, glm::vec3(TransList.T_r2x -0.1f, TransList.T_r2y - 0.3f, TransList.T_r2z ));
 			RIGHTLEG = glm::rotate(RIGHTLEG, glm::radians(AngleList.ArmAngle), glm::vec3(0.0f, 1.0f, 0.0f));
 			RIGHTLEG = glm::translate(RIGHTLEG, glm::vec3(-0.08f, 0.0f, -0.1f));
 			if (Mainswingchk == 1) {
@@ -846,10 +846,10 @@ void drawScene()
 	}
 
 
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-		// 1.오른쪽 상단
-		//-------------충돌 부분
+	// 1.오른쪽 상단
+	//-------------충돌 부분
 	if (TransList.T_Bodyx >= TransList.T_x + 3.0f && TransList.T_Bodyx <= TransList.T_x + 5.0f && TransList.T_Bodyz >= TransList.T_z - 5.0f && TransList.T_Bodyz <= TransList.T_z - 3.3f)
 	{
 		Change1 = true;
@@ -994,9 +994,9 @@ void drawScene()
 		glDrawArrays(GL_TRIANGLES, 0, ObjVertexVal[5].size());
 	}
 
-	///////////////////////////////////////////////////////////////////////////////장애물 및 주인공 객체///////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////장애물 및 주인공 객체///////////////////////////////////////////////////////////////////////////////////////////////
 
-		//하단 자전 도형
+	//하단 자전 도형
 	{
 		glBindVertexArray(VAO[6]);//VAO6
 		glm::mat4 DOWNREVOLUTION = glm::mat4(1.0f);
@@ -1013,7 +1013,7 @@ void drawScene()
 		unsigned int DOWNREVOLUTIONfragLocation = glGetUniformLocation(shaderID, "objColor");
 		glUniform3f(DOWNREVOLUTIONfragLocation, 0.73f, 0.325f, 0.2f);
 		glDrawArrays(GL_TRIANGLES, 0, ObjVertexVal[6].size());
-		if (TransList.T_Bodyx >= TransList.T_Trapx - 1.0f && TransList.T_Bodyx <= TransList.T_Trapx + 1.0f && TransList.T_Bodyz <= TransList.T_Trapz + 5.0f && TransList.T_Bodyz >= TransList.T_Trapz + 2.0f)
+		if (TransList.T_Bodyx >= TransList.T_Trapx -1.0f && TransList.T_Bodyx <= TransList.T_Trapx + 1.0f && TransList.T_Bodyz <= TransList.T_Trapz +5.0f && TransList.T_Bodyz >= TransList.T_Trapz +2.0f)
 		{
 			TransList.T_Bodyz -= 0.2f;
 			TransList.T_ArmLegz -= 0.2f;
@@ -1075,7 +1075,7 @@ void drawScene()
 	glm::mat4 BODY = glm::mat4(1.0f);
 	BODY = glm::translate(BODY, glm::vec3(TransList.T_Bodyx, TransList.T_Bodyy, TransList.T_Bodyz));
 	BODY = glm::rotate(BODY, glm::radians(AngleList.BodyAngle), glm::vec3(0.0f, 1.0f, 0.0f));
-	BODY = glm::scale(BODY, glm::vec3(1.0f, Scalepos.My + 1.5f, 1.0f));
+	BODY = glm::scale(BODY, glm::vec3(1.0f, Scalepos.My+1.5f, 1.0f));
 	unsigned int BODYLocation = glGetUniformLocation(shaderID, "modeltransform");
 	glUniformMatrix4fv(BODYLocation, 1, GL_FALSE, glm::value_ptr(BODY));
 	glm::mat4 BODYNormal = glm::mat4(1.0f);
@@ -1126,7 +1126,7 @@ void drawScene()
 	if (Mainswingchk == 2) {
 		LEFTARM = glm::rotate(LEFTARM, glm::radians(AngleList.MainSwing1), glm::vec3(0.0f, 0.0f, 1.0f));
 	}
-	LEFTARM = glm::scale(LEFTARM, glm::vec3(0.15f, Scalepos.My + 0.6f, 0.15f));
+	LEFTARM = glm::scale(LEFTARM, glm::vec3(0.15f, Scalepos.My+0.6f, 0.15f));
 	unsigned int LEFTARMLocation = glGetUniformLocation(shaderID, "modeltransform");
 	glUniformMatrix4fv(LEFTARMLocation, 1, GL_FALSE, glm::value_ptr(LEFTARM));
 	glm::mat4 LEFTARMNormal = glm::mat4(1.0f);
@@ -1148,7 +1148,7 @@ void drawScene()
 	if (Mainswingchk == 2) {
 		RIGHTARM = glm::rotate(RIGHTARM, glm::radians(AngleList.MainSwing2), glm::vec3(0.0f, 0.0f, 1.0f));
 	}
-	RIGHTARM = glm::scale(RIGHTARM, glm::vec3(0.15f, Scalepos.My + 0.6f, 0.15f));
+	RIGHTARM = glm::scale(RIGHTARM, glm::vec3(0.15f, Scalepos.My+ 0.6f, 0.15f));
 	unsigned int RIGHTARMLocation = glGetUniformLocation(shaderID, "modeltransform");
 	glUniformMatrix4fv(RIGHTARMLocation, 1, GL_FALSE, glm::value_ptr(RIGHTARM));
 	glm::mat4 RIGHTARMNormal = glm::mat4(1.0f);
@@ -1170,7 +1170,7 @@ void drawScene()
 	if (Mainswingchk == 2) {
 		LEFTLEG = glm::rotate(LEFTLEG, glm::radians(AngleList.MainSwing2), glm::vec3(0.0f, 0.0f, 1.0f));
 	}
-	LEFTLEG = glm::scale(LEFTLEG, glm::vec3(0.15f, Scalepos.My + 0.6f, 0.15f));
+	LEFTLEG = glm::scale(LEFTLEG, glm::vec3(0.15f, Scalepos.My+0.6f, 0.15f));
 	unsigned int LEFTLEGLocation = glGetUniformLocation(shaderID, "modeltransform");
 	glUniformMatrix4fv(LEFTLEGLocation, 1, GL_FALSE, glm::value_ptr(LEFTLEG));
 	glm::mat4 LEFTLEGNormal = glm::mat4(1.0f);
@@ -1192,7 +1192,7 @@ void drawScene()
 	if (Mainswingchk == 2) {
 		RIGHTLEG = glm::rotate(RIGHTLEG, glm::radians(AngleList.MainSwing1), glm::vec3(0.0f, 0.0f, 1.0f));
 	}
-	RIGHTLEG = glm::scale(RIGHTLEG, glm::vec3(0.15f, Scalepos.My + 0.6f, 0.15f));
+	RIGHTLEG = glm::scale(RIGHTLEG, glm::vec3(0.15f, Scalepos.My+0.6f, 0.15f));
 	unsigned int RIGHTLEGLocation = glGetUniformLocation(shaderID, "modeltransform");
 	glUniformMatrix4fv(RIGHTLEGLocation, 1, GL_FALSE, glm::value_ptr(RIGHTLEG));
 	glm::mat4 RIGHTLEGNormal = glm::mat4(1.0f);
@@ -1230,7 +1230,7 @@ GLvoid KeyBoard(unsigned char Key, int x, int y)
 {
 	switch (Key)
 	{
-		//---------------------------조명 
+	//---------------------------조명 
 	case 'r':
 		LightBoxRotateP = false;
 		LightBoxRotateM = !LightBoxRotateM;
@@ -1242,7 +1242,7 @@ GLvoid KeyBoard(unsigned char Key, int x, int y)
 	case 't':
 		LightOnOff = !LightOnOff;
 		break;
-		//---------------------------카메라
+	//---------------------------카메라
 	case 'z':
 		Camerapos.C_z -= 0.04f;
 		break;
@@ -1264,7 +1264,7 @@ GLvoid KeyBoard(unsigned char Key, int x, int y)
 		CameraRotateM = !CameraRotateM;
 		break;
 
-		// --------------------------이동키
+	// --------------------------이동키
 	case 'j':
 		Mainswingchk = 2;
 		AngleList.BodyAngle = 180.0f;
@@ -1296,9 +1296,9 @@ GLvoid KeyBoard(unsigned char Key, int x, int y)
 		TransList.T_Bodyz += 0.06f;
 		TransList.T_ArmLegz += 0.06f;
 		break;
-		// 점프
+	// 점프
 	case 'm':
-		JumpState = !JumpState;
+		JumpState =!JumpState;
 		jumpcheck = 0;
 		break;
 
@@ -1314,31 +1314,15 @@ GLvoid KeyBoard(unsigned char Key, int x, int y)
 void timer(int value)
 {
 	if (ycheck == true)
-	{
 		AngleList.AngleRevoly += 2.0f;
-	}
-
 	if (LightBoxRotateM)
-	{
 		AngleList.LightRadian -= 1.5f;
-	}
-
 	if (LightBoxRotateP)
-	{
 		AngleList.LightRadian += 1.5f;
-	}
-
 	if (CameraRotateP)
-	{
 		AngleList.anglecamera += 2.5f;
-	}
-
 	if (CameraRotateM)
-	{
 		AngleList.anglecamera -= 2.5f;
-	}
-
-
 
 	if (Mainswingchk)
 	{
@@ -1373,15 +1357,13 @@ void timer(int value)
 	}
 
 
-	if (LightOnOff == true)
-	{
-		LightColor.x = 0.903922;
-		LightColor.y = 0.852941;
-		LightColor.z = 0.790196;
+	if (LightOnOff == true) {
+		LightColor.x = 0.903922; 
+		LightColor.y= 0.852941;
+		LightColor.z=0.790196;
 	}
 
-	if (LightOnOff == false)
-	{
+	if (LightOnOff == false) {
 		LightColor.x = 0.1f;
 		LightColor.y = 0.1f;
 		LightColor.z = 0.1f;
@@ -1389,40 +1371,32 @@ void timer(int value)
 
 	if (JumpState == true)
 	{
-		if (jumpcheck == 0)
-		{
-
-			Scalepos.My = 0.00f;
+		if (jumpcheck==0) {
+			
+			Scalepos.My =0.00f;
 			TransList.T_Bodyy += 0.05f;
 			TransList.T_ArmLegy += 0.05f;
 			TransList.T_hairy += 0.06f;
-			if (TransList.T_Bodyy >= 0.5f)
-			{
+			if (TransList.T_Bodyy >= 0.5f) {
 				TransList.T_Bodyy -= 0.05f;
 				TransList.T_ArmLegy -= 0.05f;
 				TransList.T_hairy -= 0.06f;
 				jumpcheck = 1;
 			}
 		}
-		if (jumpcheck == 1)
-		{
-
+		if (jumpcheck==1) {
+		
 			TransList.T_Bodyy -= 0.05f;
 			TransList.T_ArmLegy -= 0.05f;
-			TransList.T_hairy -= 0.06f;
+			TransList.T_hairy -=0.06f;
 			Scalepos.My -= 0.015f;
-			if (TransList.T_Bodyy < -0.2f)
-			{
+			if (TransList.T_Bodyy<-0.2f) {
 				TransList.T_Bodyy += 0.05f;
 				TransList.T_ArmLegy += 0.05f;
 				TransList.T_hairy += 0.06f;
 				jumpcheck = 0;
-
 			}
-
 		}
-
-
 	}
 	else
 	{
@@ -1434,38 +1408,26 @@ void timer(int value)
 
 	if (transcheck1 == 1 || Change1 == true)
 	{
-		if (TransList.T_r1x < TransList.T_Bodyx)
-		{
+		if (TransList.T_r1x < TransList.T_Bodyx) {
 			TransList.T_r1x += 0.1f;
 			if (TransList.T_r1x > TransList.T_Bodyx - 0.5f)
-			{
 				TransList.T_r1x -= 0.1f;
-			}
 		}
-		if (TransList.T_r1x > TransList.T_Bodyx)
-		{
+		if (TransList.T_r1x > TransList.T_Bodyx) {
 			TransList.T_r1x -= 0.1f;
-			if (TransList.T_r1x < TransList.T_Bodyx + 0.5f)
-			{
+			if (TransList.T_r1x < TransList.T_Bodyx +0.5f)
 				TransList.T_r1x += 0.1f;
-			}
 
 		}
-		if (TransList.T_r1z < TransList.T_Bodyz)
-		{
+		if (TransList.T_r1z < TransList.T_Bodyz) {
 			TransList.T_r1z += 0.1f;
-			if (TransList.T_r1z > TransList.T_Bodyz - 0.5f)
-			{
+			if (TransList.T_r1z > TransList.T_Bodyz -0.5f)
 				TransList.T_r1z -= 0.1f;
-			}
 		}
-		if (TransList.T_r1z > TransList.T_Bodyz)
-		{
+		if (TransList.T_r1z > TransList.T_Bodyz) {
 			TransList.T_r1z -= 0.1f;
-			if (TransList.T_r1z < TransList.T_Bodyz + 0.5f)
-			{
+			if (TransList.T_r1z < TransList.T_Bodyz +0.5f)
 				TransList.T_r1z += 0.1f;
-			}
 		}
 	}
 
@@ -1476,34 +1438,26 @@ void timer(int value)
 		{
 			TransList.T_r2x += 0.12f;
 			if (TransList.T_r2x > TransList.T_Bodyx - 1.0f)
-			{
 				TransList.T_r2x -= 0.12f;
-			}
 		}
 		if (TransList.T_r2x > TransList.T_Bodyx)
 		{
 			TransList.T_r2x -= 0.12f;
-			if (TransList.T_r2x < TransList.T_Bodyx + 1.0f)
-			{
+			if (TransList.T_r2x < TransList.T_Bodyx +1.0f)
 				TransList.T_r2x += 0.12f;
-			}
 
 		}
 		if (TransList.T_r2z < TransList.T_Bodyz)
 		{
 			TransList.T_r2z += 0.12f;
 			if (TransList.T_r2z > TransList.T_Bodyz - 1.0f)
-			{
 				TransList.T_r2z -= 0.12f;
-			}
 		}
 		if (TransList.T_r2z > TransList.T_Bodyz)
 		{
 			TransList.T_r2z -= 0.12f;
 			if (TransList.T_r2z < TransList.T_Bodyz + 1.0f)
-			{
 				TransList.T_r2z += 0.12f;
-			}
 
 		}
 	}
@@ -1514,34 +1468,25 @@ void timer(int value)
 		{
 			TransList.T_r3x += 0.13f;
 			if (TransList.T_r3x > TransList.T_Bodyx - 1.5f)
-			{
 				TransList.T_r3x -= 0.13f;
-			}
 		}
 		if (TransList.T_r3x > TransList.T_Bodyx)
 		{
 			TransList.T_r3x -= 0.13f;
 			if (TransList.T_r3x < TransList.T_Bodyx + 1.5f)
-			{
 				TransList.T_r3x += 0.13f;
-			}
-
 		}
 		if (TransList.T_r3z < TransList.T_Bodyz)
 		{
 			TransList.T_r3z += 0.13f;
 			if (TransList.T_r3z > TransList.T_Bodyz - 1.5f)
-			{
 				TransList.T_r3z -= 0.13f;
-			}
 		}
 		if (TransList.T_r3z > TransList.T_Bodyz)
 		{
 			TransList.T_r3z -= 0.13f;
 			if (TransList.T_r3z < TransList.T_Bodyz + 1.5f)
-			{
 				TransList.T_r3z += 0.13f;
-			}
 		}
 	}
 	if (transcheck4 == 1)
@@ -1550,59 +1495,50 @@ void timer(int value)
 		{
 			TransList.T_r4x += 0.14f;
 			if (TransList.T_r4x > TransList.T_Bodyx - 2.0f) {
-				TransList.T_r4x -= 0.14f;
-			}
+				TransList.T_r4x -= 0.14f; }
 		}
 		if (TransList.T_r4x > TransList.T_Bodyx) {
 			TransList.T_r4x -= 0.14f;
 			if (TransList.T_r4x < TransList.T_Bodyx + 2.0f) {
-				TransList.T_r4x += 0.14f;
-			}
+				TransList.T_r4x += 0.14f;}
 		}
 		if (TransList.T_r4z < TransList.T_Bodyz) {
 			TransList.T_r4z += 0.14f;
 			if (TransList.T_r4z > TransList.T_Bodyz - 2.0f) {
-				TransList.T_r4z -= 0.14f;
-			}
+				TransList.T_r4z -= 0.14f; }
 		}
 		if (TransList.T_r4z > TransList.T_Bodyz) {
 			TransList.T_r4z -= 0.14f;
 			if (TransList.T_r4z < TransList.T_Bodyz + 2.0f) {
-				TransList.T_r4z += 0.14f;
-			}
+				TransList.T_r4z += 0.14f; }
 		}
 	}
 
 	if (TrapRotate == true)
-	{
 		AngleList.AngleTrap -= 40.0f;
-	}
 
 	if (snowcheck == true)
 	{
 		for (int i = 0; i < 50; i++) {
 			SLocation[i].y -= SnowSpeed[i].y;
-			if (SLocation[i].y <= 0.0f) {
+			if (SLocation[i].y <= 0.0f) 
 				SLocation[i].y = SaveLocation[i].y;
-			}
-
 		}
 	}
-
+	
 
 	glutPostRedisplay();
 	glutTimerFunc(60, timer, 1);
 }
 void ReadObj()
 {
+
 	readobjNomal("Model/Semi/cube.obj", ObjVertexVal[0], ObjNomarVal[0]);
 	readobjNomal("Model/Semi/Sphere2.obj", ObjVertexVal[1], ObjNomarVal[1]);
 	for (int i = 2; i < 9; i++)
 	{
-		readobjNomal("cube.obj", ObjVertexVal[i], ObjNomarVal[i]);
+		readobjNomal("Model/Semi/cube.obj", ObjVertexVal[i], ObjNomarVal[i]);
 	}
-
-	// 9,14,19,24,29
 	for (int i = 9; i < 37; i++) {
 		if (i == 9 || i == 14 || i == 19 || i == 24 || i == 29) {
 			readobjNomal("Model/Semi/j_body.obj", ObjVertexVal[i], ObjNomarVal[i]);
@@ -1612,6 +1548,7 @@ void ReadObj()
 		}
 	}
 	readobjNomal("Model/Semi/Sphere2.obj", ObjVertexVal[37], ObjNomarVal[37]);
+
 }
 int main(int argc, char** argv)
 {
@@ -1619,7 +1556,7 @@ int main(int argc, char** argv)
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
 	glutInitWindowPosition(0, 0);
-	glutInitWindowSize(FRAME_WIDTH, FRAME_HEIGHT);
+	glutInitWindowSize(FRAME_WIDTH,FRAME_HEIGHT);
 	glutCreateWindow("Homework2");
 
 	glewExperimental = GL_TRUE;
@@ -1627,9 +1564,7 @@ int main(int argc, char** argv)
 		cerr << "NOT INIT" << endl;
 	else cout << "INIT<<endl";
 	ReadObj();
-
-
-	cout << "r/R : 조명 양/음 회전 " << endl;
+	cout << "r/R : 조명 양/음 회전 "<<endl;
 	cout << "t : 조명 끄고 키기" << endl;
 	cout << "z/Z/x/X : 카메라 상하좌우 이동 " << endl;
 	cout << "c/C : 카메라 y축기준 양/음 회전" << endl;
@@ -1639,7 +1574,7 @@ int main(int argc, char** argv)
 	cout << "q : 종료 " << endl;
 
 	SnowPlay();
-	makeShader(vn, fn, shaderID);
+	makeShader(vn,fn,shaderID);
 	InitBuffer();
 	glutKeyboardFunc(KeyBoard);
 	glutDisplayFunc(drawScene);

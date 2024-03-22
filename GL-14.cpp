@@ -1,9 +1,4 @@
-#include <iostream>
-#include <glm/glm/glm.hpp>
-#include <glm/glm/ext.hpp>
-#include <glm/glm/gtc/matrix_transform.hpp>
-#include <gl/glew.h>
-#include <gl/freeglut.h>
+#include "stdafx.h"
 
 using namespace std;
 void make_vertexShaders();
@@ -143,7 +138,7 @@ GLchar* filetobuf(const GLchar* file)
 void make_vertexShaders()
 {
 	GLchar* vertexSource;
-	vertexSource = filetobuf("vertex.GLM");
+	vertexSource = filetobuf("Shader/vertex.GLM");
 	vertexShader = glCreateShader(GL_VERTEX_SHADER);
 	glShaderSource(vertexShader, 1, &vertexSource, NULL);
 	glCompileShader(vertexShader);
@@ -153,7 +148,7 @@ void make_vertexShaders()
 void make_fragmentShader()
 {
 	GLchar* fragmentSource;
-	fragmentSource = filetobuf("fragment.GLM");
+	fragmentSource = filetobuf("Shader/fragment.GLM");
 	fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
 	glShaderSource(fragmentShader, 1, &fragmentSource, NULL);
 	glCompileShader(fragmentShader);

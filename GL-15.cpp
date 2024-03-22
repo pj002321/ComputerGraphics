@@ -1,9 +1,4 @@
-﻿#include <iostream>
-#include <glm/glm/glm.hpp>
-#include <glm/glm/ext.hpp>
-#include <glm/glm/gtc/matrix_transform.hpp>
-#include <gl/glew.h>
-#include <gl/freeglut.h>
+﻿#include "stdafx.h"
 
 using namespace std;
 void timer(int value);
@@ -41,6 +36,7 @@ float Qt_y = 0.18f;
 float La_x = 30.0f;
 float La_y = -30.0f;
 float h_vertex = 0.2f;
+
 float data_line[] =
 {  //사분면선
    0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f,
@@ -77,32 +73,32 @@ float data_hexa[] =
 	-h_vertex, h_vertex, h_vertex,	1.0f, 0.0f, 0.0f,
 
 	h_vertex, -h_vertex, h_vertex,	0.0f, 1.0f, 1.0f,
-	h_vertex, h_vertex, h_vertex,		 0.0f, 1.0f, 0.0f,
+	h_vertex, h_vertex, h_vertex,	0.0f, 1.0f, 0.0f,
 	-h_vertex, h_vertex, h_vertex,	1.0f, 0.0f, 0.0f,
 
 	h_vertex, -h_vertex, -h_vertex,	0.5f, 0.3f, 0.7f,
-	-h_vertex, -h_vertex, -h_vertex,	0.3f, 0.0f, 0.7f,
+	-h_vertex, -h_vertex, -h_vertex,0.3f, 0.0f, 0.7f,
 	h_vertex, h_vertex, -h_vertex,	0.0f, 0.0f, 1.0f,
 
-	-h_vertex, -h_vertex, -h_vertex,	0.3f, 0.0f, 0.7f,
+	-h_vertex, -h_vertex, -h_vertex,0.3f, 0.0f, 0.7f,
 	-h_vertex, h_vertex, -h_vertex,	0.5f, 0.5f, 0.5f,
 	h_vertex, h_vertex, -h_vertex,	0.0f, 0.0f, 1.0f,
 
-	-h_vertex, -h_vertex, -h_vertex,	0.3f, 0.0f, 0.3f,
+	-h_vertex, -h_vertex, -h_vertex,0.3f, 0.0f, 0.3f,
 	-h_vertex, h_vertex, h_vertex,	1.0f, 0.0f, 0.0f,
 	-h_vertex, h_vertex, -h_vertex,	0.5f, 0.5f, 0.5f,
 
-	-h_vertex, -h_vertex, -h_vertex,		0.3f, 0.0f, 0.4f,
+	-h_vertex, -h_vertex, -h_vertex, 0.3f, 0.0f, 0.4f,
 	-h_vertex, -h_vertex, h_vertex,	 0.0f, 0.0f, 0.0f,
-	-h_vertex, h_vertex, h_vertex,	1.0f, 0.0f, 0.0f,
+	-h_vertex, h_vertex, h_vertex,	 1.0f, 0.0f, 0.0f,
 
-   h_vertex, -h_vertex, h_vertex,		0.0f, 1.0f, 1.0f,
-   h_vertex, -h_vertex, -h_vertex,	 0.5f, 0.3f, 0.7f,
-   h_vertex, h_vertex, h_vertex,		0.0f, 1.0f, 0.0f,
+   h_vertex, -h_vertex, h_vertex,	0.0f, 1.0f, 1.0f,
+   h_vertex, -h_vertex, -h_vertex,	0.5f, 0.3f, 0.7f,
+   h_vertex, h_vertex, h_vertex,	0.0f, 1.0f, 0.0f,
 
-   h_vertex, -h_vertex, -h_vertex,   0.5f, 0.3f, 0.7f,
-   h_vertex, h_vertex, -h_vertex,		 0.0f, 0.0f, 1.0f,
-   h_vertex, h_vertex, h_vertex,		0.0f, 1.0f, 0.0f
+   h_vertex, -h_vertex, -h_vertex,  0.5f, 0.3f, 0.7f,
+   h_vertex, h_vertex, -h_vertex,	0.0f, 0.0f, 1.0f,
+   h_vertex, h_vertex, h_vertex,	0.0f, 1.0f, 0.0f
 };
 
 
@@ -160,7 +156,7 @@ GLchar* filetobuf(const GLchar* file)
 void make_vertexShaders()
 {
 	GLchar* vertexSource;
-	vertexSource = filetobuf("vertex.GLM");
+	vertexSource = filetobuf("Shader/vertex.GLM");
 	vertexShader = glCreateShader(GL_VERTEX_SHADER);
 	glShaderSource(vertexShader, 1, &vertexSource, NULL);
 	glCompileShader(vertexShader);
@@ -171,7 +167,7 @@ void make_vertexShaders()
 void make_fragmentShader()
 {
 	GLchar* fragmentSource;
-	fragmentSource = filetobuf("fragment.GLM");
+	fragmentSource = filetobuf("Shader/fragment.GLM");
 	fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
 	glShaderSource(fragmentShader, 1, &fragmentSource, NULL);
 	glCompileShader(fragmentShader);

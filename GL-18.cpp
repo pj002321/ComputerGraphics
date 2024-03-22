@@ -1,14 +1,4 @@
-#include <iostream>
-#include <gl/glew.h>
-#include <gl/freeglut.h>
-#include <math.h>
-#include <vector>
-#include <random>
-#include <glm/glm/glm.hpp>
-#include <glm/glm/ext.hpp>
-#include <glm/glm/gtc/matrix_transform.hpp>
-
-using namespace std;
+#include "stdafx.h"
 
 void timer(int value);
 void make_vertexShaders();
@@ -115,8 +105,8 @@ void Make_spinprogram()
 	r_color = 0.5, g_color = 1.0, b_color = 0.3;
 	for (int i = 0;  i < theta*2;  i++)
 	{
-			cx = r * cos(3.14 * i / theta);
-			cz = r * sin(3.14 * i / theta);
+		cx = r * cos(3.14 * i / theta);
+		cz = r * sin(3.14 * i / theta);
 		
 		maincircle1.push_back(cx);
 		maincircle1.push_back(0);
@@ -203,38 +193,17 @@ void Make_spinprogram()
 
 }
 
-GLchar* filetobuf(const GLchar* file)
-{
-	FILE* fptr;
-	long length;
-	GLchar* buf;
-
-	fopen_s(&fptr, file, "rb");
-	if (!fptr)
-		return NULL;
-
-	fseek(fptr, 0, SEEK_END);
-	length = ftell(fptr);
-	buf = (GLchar*)malloc(length + 1);
-	fseek(fptr, 0, SEEK_SET);
-	fread(buf, length, 1, fptr);
-	fclose(fptr);
-	buf[length] = 0;
-
-	return buf;
-}
-
 
 void make_vertexShaders()
 {
 	GLchar* vertexSource;
-	vertexSource = filetobuf("vertex.glsl");
+	vertexSource = ::filetobuf("Shader/vertex.GLM");
 	vertexShader = glCreateShader(GL_VERTEX_SHADER);
 	glShaderSource(vertexShader, 1, &vertexSource, NULL);
 	glCompileShader(vertexShader);
 
 	GLchar* qobjSource;
-	qobjSource = filetobuf("qobjvertex.glsl");
+	qobjSource = ::filetobuf("Shader/qobjvertex.glsl");
 	qobjShader = glCreateShader(GL_VERTEX_SHADER);
 	glShaderSource(qobjShader, 1, &qobjSource, NULL);
 	glCompileShader(qobjShader);
@@ -245,7 +214,7 @@ void make_vertexShaders()
 void make_fragmentShader()
 {
 	GLchar* fragmentSource;
-	fragmentSource = filetobuf("fragment.glsl");
+	fragmentSource = ::filetobuf("Shader/fragment.GLM");
 	fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
 	glShaderSource(fragmentShader, 1, &fragmentSource, NULL);
 	glCompileShader(fragmentShader);
@@ -265,8 +234,8 @@ void InitShader()
 	glAttachShader(s_program[1], qobjShader);
 	glAttachShader(s_program[1], fragmentShader);
 
-	glLinkProgram(s_program[1]);
 	glLinkProgram(s_program[0]);
+	glLinkProgram(s_program[1]);
 
 	glDeleteShader(vertexShader);
 	glDeleteShader(fragmentShader);
@@ -392,50 +361,50 @@ void timer(int value)
 	}
 	}
 	
-		mainTrans1_x = maincircle1[6 * mainrotate + 0];
-		mainTrans1_y = maincircle1[6 * mainrotate + 1];
-		mainTrans1_z = maincircle1[6 * mainrotate + 2];
-		mainTrans2_x = maincircle2[18 * mainrotate2 + 0];
-		mainTrans2_y = maincircle2[18 * mainrotate2 + 1];
-		mainTrans2_z = maincircle2[18 * mainrotate2 + 2];
-		mainTrans3_x = maincircle3[12 * mainrotate3 + 0];
-		mainTrans3_y = maincircle3[12 * mainrotate3 + 1];
-		mainTrans3_z = maincircle3[12 * mainrotate3 + 2];
-		subTrans1_x = subcircle1[12 * subrotate1 + 0];
-		subTrans1_y = subcircle1[12 * subrotate1 + 1];
-		subTrans1_z = subcircle1[12 * subrotate1 + 2];
-		subTrans2_x = subcircle2[24 * subrotate2 + 0];
-		subTrans2_y = subcircle2[24 * subrotate2 +1 ];
-		subTrans2_z = subcircle2[24 * subrotate2+2];
-		subTrans3_x = subcircle3[18 * subrotate3 + 0];
-		subTrans3_y = subcircle3[18 * subrotate3 + 1];
-		subTrans3_z = subcircle3[18 * subrotate3 + 2];
-		mainrotate++;
-		mainrotate2++;
-		mainrotate3++;
-		subrotate1++;
-		subrotate2++;
-		subrotate3++;
+	mainTrans1_x = maincircle1[6 * mainrotate + 0];
+	mainTrans1_y = maincircle1[6 * mainrotate + 1];
+	mainTrans1_z = maincircle1[6 * mainrotate + 2];
+	mainTrans2_x = maincircle2[18 * mainrotate2 + 0];
+	mainTrans2_y = maincircle2[18 * mainrotate2 + 1];
+	mainTrans2_z = maincircle2[18 * mainrotate2 + 2];
+	mainTrans3_x = maincircle3[12 * mainrotate3 + 0];
+	mainTrans3_y = maincircle3[12 * mainrotate3 + 1];
+	mainTrans3_z = maincircle3[12 * mainrotate3 + 2];
+	subTrans1_x = subcircle1[12 * subrotate1 + 0];
+	subTrans1_y = subcircle1[12 * subrotate1 + 1];
+	subTrans1_z = subcircle1[12 * subrotate1 + 2];
+	subTrans2_x = subcircle2[24 * subrotate2 + 0];
+	subTrans2_y = subcircle2[24 * subrotate2 +1 ];
+	subTrans2_z = subcircle2[24 * subrotate2+2];
+	subTrans3_x = subcircle3[18 * subrotate3 + 0];
+	subTrans3_y = subcircle3[18 * subrotate3 + 1];
+	subTrans3_z = subcircle3[18 * subrotate3 + 2];
+	mainrotate++;
+	mainrotate2++;
+	mainrotate3++;
+	subrotate1++;
+	subrotate2++;
+	subrotate3++;
 
-		if (mainrotate == 360) {
-			mainrotate = 0;
-		}
-		if (mainrotate2 == 120) {
-			mainrotate2 = 0;
-		}
-		if (mainrotate3 == 180) {
-			mainrotate3 = 0;
-		}
+	if (mainrotate == 360) {
+		mainrotate = 0;
+	}
+	if (mainrotate2 == 120) {
+		mainrotate2 = 0;
+	}
+	if (mainrotate3 == 180) {
+		mainrotate3 = 0;
+	}
 
-		if (subrotate1 == 180) {
-			subrotate1 = 0;
-		}
-		if (subrotate2== 90) {
-			subrotate2 = 0;
-		}
-		if (subrotate3 == 120) {
-			subrotate3 = 0;
-		}
+	if (subrotate1 == 180) {
+		subrotate1 = 0;
+	}
+	if (subrotate2== 90) {
+		subrotate2 = 0;
+	}
+	if (subrotate3 == 120) {
+		subrotate3 = 0;
+	}
 
 	
 	glutPostRedisplay();
@@ -458,8 +427,7 @@ void drawScene()
 	}
 	else
 	{
-			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	}
 	
 
@@ -476,7 +444,6 @@ void drawScene()
 	glm::mat4 proj = glm::mat4(1.0f);
 	proj = glm::perspective(glm::radians(60.0f), (float)width / (float)height, 0.1f, 100.0f);
 	glUniformMatrix4fv(projLoc, 1, GL_FALSE, &proj[0][0]);
-
 
 	//vao0
 	glm::mat4 MainCircle1 = glm::mat4(1.0f);

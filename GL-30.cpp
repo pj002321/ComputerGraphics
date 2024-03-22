@@ -21,9 +21,6 @@ void drawtexture();
 
 GLuint ShaderID;
 
-int Wwidth;
-int Wheight;
-
 GLuint VAO[4];
 GLuint VBO[12];
 
@@ -58,7 +55,7 @@ int main(int argc, char** argv)
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
 	glutInitWindowPosition(0, 0);
-	glutInitWindowSize(FRMAE_WIDTH, FRMAE_HEIGHT);
+	glutInitWindowSize(FRAME_WIDTH, FRAME_HEIGHT);
 	glutCreateWindow("texture example");
 
 	glewExperimental = GL_TRUE;
@@ -134,7 +131,7 @@ void DrawSceneCall()
 
 	glm::mat4 projection = glm::mat4(1.0f);
 
-	projection = glm::perspective(glm::radians(45.0f), (float)Wheight / (float)Wwidth, 0.1f, 50.0f);
+	projection = glm::perspective(glm::radians(45.0f), (float)FRAME_HEIGHT / (float)FRAME_WIDTH, 0.1f, 50.0f);
 	projection = glm::translate(projection, glm::vec3(0, 0, -5.0f));
 	unsigned int projectionLocation = glGetUniformLocation(ShaderID, "projectionTransform");
 	glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, glm::value_ptr(projection));

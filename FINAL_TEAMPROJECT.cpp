@@ -3,20 +3,19 @@
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
+
 char vn[64] = "Shader/VertexTextureShader.glsl";
 char fn[64] = "Shader/fragmentBlendShader.glsl";
-GLuint shaderID;
+
 void InitBuffer();
 void initTexture();
-using namespace std;
-unsigned int texture[10];
+
 //call_back
 void MainView();
 void keyboardCall(unsigned char key, int x, int y);
 
 //func
 void timer(int value);
-void drawPlane();
 void ObjList();
 void drawscene();
 void LocationRandom();
@@ -28,8 +27,6 @@ struct Camera {
 	float C_y = 5.0f;
 	float C_z = 9.0f;
 }Camerapos;
-
-
 struct Angle {
 
 	float angle = 0.0f;
@@ -58,9 +55,6 @@ struct Angle {
 	float EyeAngle = 0.0f;
 	float CpaeAngle = 0.0f;
 }AngleList;
-
-
-//scale
 struct Scale
 {
 	float X = 0.0f;
@@ -91,8 +85,6 @@ struct Scale
 	float PullScaleLz = 2.0f;
 	float PullScaleLy = 2.0f;
 }Scalepos;
-
-//trans
 struct Transration
 {
 	float T_x = 0.0f;
@@ -137,60 +129,48 @@ struct Transration
 	float DoorxR = -1.8f;
 
 }TransList;
-
-
-//--snow
 struct Snow {
 	float x;
 	float y;
 	float z;
 };
-Snow SLocation[200];
-Snow SaveLocation[200];
-Snow SnowSpeed[200];
-
-
-//--Light cube
 struct Star {
 	float x;
 	float y;
 	float z;
-
-
 };
-Star StarLocation[80];
-Star StarSaveLocation[80];
-Star StarSpeed[80];
-
 struct Ice {
 	float x;
 	float y;
 	float z;
 };
-
-Ice IceLocationy[6];
-Ice IceSpeed[6];
-float IceLocationx[5] = { -2.0f,-4.0f,-5.0f,-8.0f,-10.0f };
-float IceLocationz[5] = { 81.0f,84.0f,86.0f,89.0f,93.0f };
-//--Trap
 struct Trap {
 	float x;
 	float y;
 	float z;
 };
 
+Snow SLocation[200];
+Snow SaveLocation[200];
+Snow SnowSpeed[200];
+
+Star StarLocation[80];
+Star StarSaveLocation[80];
+Star StarSpeed[80];
+
+Ice IceLocationy[6];
+Ice IceSpeed[6];
+
 Trap radomcorail[6];
 Trap Pullmove[3];
+
 GLuint VAO[30];
 GLuint VBO[90];
+GLuint shaderID;
 
 vector<glm::vec4> Vertex[26];
 vector<glm::vec4> Nomal[26];
 vector<glm::vec2> Texture[26];
-
-float angle = 0.0f;
-float cameraRevolu = 0.0f;
-float lightRevoluAngle = 0.0f;
 
 bool change = false;
 bool Rotate = true;
@@ -205,6 +185,8 @@ bool TrapJumpState = true;
 bool PullTrapcheck = true;
 bool snowcheck = true;
 bool Starchek = true;
+bool Icecheck = true;
+bool Icereturn = true;
 int Mainswingchk = 1;
 int trapjumpcheck = 0;
 int selectLightColor = 0;
@@ -215,16 +197,30 @@ int PullTrapPoint3 = 0;
 int PullTrapPoint4 = 0;
 int PullTrapPoint5 = 0;
 int PullTrapPoint6 = 0;
-bool Icecheck = true;
-bool Icereturn = true;
+unsigned int texture[10];
+
+float angle = 0.0f;
+float Movevalue = 0.05f;
+float cameraRevolu = 0.0f;
+float lightRevoluAngle = 0.0f;
+float IceLocationx[5] = { -2.0f,-4.0f,-5.0f,-8.0f,-10.0f };
+float IceLocationz[5] = { 81.0f,84.0f,86.0f,89.0f,93.0f };
+
+float PullTrapLx[3] = { 5.0f,5.0f,5.0f };
+float PullTrapLz[3] = { 36.0f,48.0f,63.0f };
+float PullTrapRx[3] = { -5.0f,-5.0f,-5.0f, };
+float PullTrapRz[3] = { 43.0f,53.0f,68.0f };
+float HelyTrapx[7] = { 12.0f,16.0f,22.0f,24.0f,18.0f,8.0f,10.0f };
+float HelyTrapz[7] = { 20.0f,17.0f,16.0f,18.0f,15.0f,19.0f,14.0f };
+float Potalx[3] = { 28.0,-4.0 };
+float Potalz[3] = { 21.0,30.0 };
+
 glm::vec3 objC = glm::vec3(0, 0, 0);
 glm::vec3 cameraPos = glm::vec3(1.0f, 3.0f, 10.0f);
 glm::vec3 lightPos = glm::vec3(0, 3.0f, 2.5f);
 glm::vec3 lightColor = glm::vec3(1.4f, 1.3f, 1.3f);
 glm::vec3 Cameraposdir = glm::vec3(0.0f);
 glm::vec3 Cameradir = glm::vec3(0.0f);
-float Movevalue = 0.05f;
-
 glm::vec3 lightColorKind[4] = {
 	glm::vec3(0.7f, 0.7f, 0.7f),
 	glm::vec3(1,0,0),
@@ -232,7 +228,31 @@ glm::vec3 lightColorKind[4] = {
 	glm::vec3(0,0,1)
 };
 
+int main(int argc, char** argv)
+{
+	//PlaySound(TEXT("backsound.wav"), NULL, SND_ASYNC | SND_ALIAS);
+	glutInit(&argc, argv);
+	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
+	glutInitWindowPosition(0, 0);
+	glutInitWindowSize(FRAME_WIDTH, FRAME_HEIGHT);
+	glutCreateWindow("TeamProject");
 
+	glewExperimental = GL_TRUE;
+	if (glewInit() != GLEW_OK)
+		cerr << "fail Initialize" << endl;
+	else cout << "Initialize" << endl;
+	ObjList();
+
+	makeShader(vn,fn,shaderID);
+	InitBuffer();
+	initTexture();
+	LocationRandom();
+	glutDisplayFunc(MainView);
+	glutReshapeFunc(Resize);
+	glutKeyboardFunc(keyboardCall);
+	glutTimerFunc(1, timer, 1);
+	glutMainLoop();
+}
 void LocationRandom() {
 	for (int i = 0; i < 100; i++) {
 		random_device rd;
@@ -245,7 +265,6 @@ void LocationRandom() {
 		float Sz = ScaleXZ(dre);
 		float Sy = LoctionY(dre);
 		float SpeedY = Speed(dre);
-
 
 		SLocation[i].x = Sx;
 		SLocation[i].y = Sy;
@@ -266,8 +285,6 @@ void LocationRandom() {
 		uniform_real_distribution<>ScaleZ(-8.0, 60.0);
 		uniform_real_distribution<>SpeedY(0.01, 0.03);
 
-
-
 		float Sx1 = ScaleX(dre);
 		float Sz1 = ScaleZ(dre);
 		float Sy1 = LoctionY(dre);
@@ -277,12 +294,9 @@ void LocationRandom() {
 		StarLocation[i].y = Sy1;
 		StarLocation[i].z = Sz1;
 
-
-
 		StarSaveLocation[i].x = Sx1;
 		StarSaveLocation[i].y = Sy1;
 		StarSaveLocation[i].z = Sz1;
-
 
 		StarSpeed[i].y = SP;
 	}
@@ -316,145 +330,76 @@ void LocationRandom() {
 
 
 }
-
-float PullTrapLx[3] = { 5.0f,5.0f,5.0f };
-float PullTrapLz[3] = { 36.0f,48.0f,63.0f };
-float PullTrapRx[3] = { -5.0f,-5.0f,-5.0f, };
-float PullTrapRz[3] = { 43.0f,53.0f,68.0f };
-float HelyTrapx[7] = { 12.0f,16.0f,22.0f,24.0f,18.0f,8.0f,10.0f };
-float HelyTrapz[7] = { 20.0f,17.0f,16.0f,18.0f,15.0f,19.0f,14.0f };
-float Potalx[3] = { 28.0,-4.0 };
-float Potalz[3] = { 21.0,30.0 };
-
-int main(int argc, char** argv)
-{
-	//PlaySound(TEXT("backsound.wav"), NULL, SND_ASYNC | SND_ALIAS);
-	glutInit(&argc, argv);
-	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
-	glutInitWindowPosition(0, 0);
-	glutInitWindowSize(FRAME_WIDTH, FRAME_HEIGHT);
-	glutCreateWindow("TeamProject");
-
-	glewExperimental = GL_TRUE;
-	if (glewInit() != GLEW_OK)
-		cerr << "fail Initialize" << endl;
-	else cout << "Initialize" << endl;
-	ObjList();
-
-	makeShader(vn,fn,shaderID);
-	InitBuffer();
-	initTexture();
-	LocationRandom();
-	glutDisplayFunc(MainView);
-	glutReshapeFunc(Resize);
-	glutKeyboardFunc(keyboardCall);
-	glutTimerFunc(1, timer, 1);
-	glutMainLoop();
-}
-
 void timer(int value)
 {
 
-	if (Rotate == true)
-	{
+	if (Rotate == true) 
 		angle += 3.0f;
-	}
-	if (snowcheck == true)
-	{
+	
+	if (snowcheck == true) {
 		for (int i = 0; i < 80; i++) {
 			SLocation[i].y += SnowSpeed[i].y;
-			if (SLocation[i].y >= 6.0f) {
+			if (SLocation[i].y >= 6.0f) 
 				SLocation[i].y = SaveLocation[i].y;
-			}
-
 		}
 	}
 
-	if (snowcheck == true)
-	{
+	if (snowcheck == true) {
 		for (int i = 0; i < 40; i++) {
-			if (Starchek == true)
-			{
-
+			if (Starchek == true) {
 				StarLocation[i].y += StarSpeed[i].y;
-				if (StarLocation[i].y >= -2.0f) {
+				if (StarLocation[i].y >= -2.0f) 
 					Starchek = false;
-				}
-
 			}
-			if (Starchek == false)
-			{
-
+			if (Starchek == false) {
 				StarLocation[i].y -= StarSpeed[i].y;
-				if (StarLocation[i].y <= -3.0f) {
+				if (StarLocation[i].y <= -3.0f) 
 					Starchek = true;
-				}
-
-
 			}
 		}
 	}
 
-	if (snowcheck == true)
-	{
+	if (snowcheck == true) {
 		for (int i = 0; i < 80; i++) {
 			SLocation[i].y += SnowSpeed[i].y;
 			if (SLocation[i].y >= 6.0f) {
 				SLocation[i].y = SaveLocation[i].y;
 			}
-
 		}
 	}
 
-	if (Icecheck == true)
-	{
+	if (Icecheck == true) {
 		for (int i = 0; i < 5; i++) {
 			IceLocationy[i].y -= IceSpeed[i].y;
 			if (IceLocationy[i].y <= TransList.T_Stage2Y + 4.8f)
-			{
 				IceLocationy[i].y = 9.0f;
-			}
 		}
 	}
 
-	if (JumpState == true)
-	{
-
-		if (jumpcheck == 0)
-		{
-
+	if (JumpState == true) {
+		if (jumpcheck == 0) {
 			Scalepos.My = 0.0f;
 			TransList.T_Bodyy += 0.05f;
 			TransList.T_ArmLegy += 0.05f;
 			TransList.T_Eyey += 0.05f;
-			if (TransList.T_Bodyy >= 1.6f) {
+			if (TransList.T_Bodyy >= 1.6f) 
 				jumpcheck = 1;
-			}
 		}
-		if (jumpcheck == 1)
-		{
-
+		if (jumpcheck == 1) {
 			TransList.T_Bodyy -= 0.05f;
 			TransList.T_ArmLegy -= 0.05f;
 			TransList.T_Eyey -= 0.05f;
 			Scalepos.My -= 0.005f;
-			if (Scalepos.My < -0.1f) {
+			if (Scalepos.My < -0.1f) 
 				Scalepos.My += 0.005f;
-			}
-
-			if (TransList.T_Bodyy <= 0.7f) {
+			if (TransList.T_Bodyy <= 0.7f) 
 				jumpcheck = 0;
-			}
 		}
 	}
 
-	if (TrapJumpState == true)
-	{
-		for (size_t i = 0; i < 4; i++)
-		{
-
-			if (trapjumpcheck == 0)
-			{
+	if (TrapJumpState == true) {
+		for (size_t i = 0; i < 4; i++) {
+			if (trapjumpcheck == 0) {
 				radomcorail[0].y += 0.004f;
 				radomcorail[1].y += 0.008f;
 				radomcorail[2].y += 0.005f;
@@ -462,13 +407,10 @@ void timer(int value)
 				radomcorail[4].y += 0.015f;
 				radomcorail[5].y += 0.012f;
 				if (radomcorail[i].y > 2.3234f)
-				{
 					trapjumpcheck = 1;
-				}
 			}
 
-			if (trapjumpcheck == 1)
-			{
+			if (trapjumpcheck == 1) {
 				radomcorail[0].y -= 0.004f;
 				radomcorail[1].y -= 0.008f;
 				radomcorail[2].y -= 0.005f;
@@ -476,111 +418,76 @@ void timer(int value)
 				radomcorail[4].y -= 0.015f;
 				radomcorail[5].y -= 0.012f;
 				if (radomcorail[i].y < 0.7f)
-				{
 					trapjumpcheck = 0;
-				}
 			}
 		}
 	}
 
-	if (Mainswingchk)
-	{
-
+	if (Mainswingchk) {
 		if (MainswingAngle1 == true) {
 			AngleList.MainSwing1 += 2.0f;
-			if (AngleList.MainSwing1 == 20.0f) {
+			if (AngleList.MainSwing1 == 20.0f) 
 				MainswingAngle1 = false;
-			}
 		}
 		if (MainswingAngle1 == false) {
 			AngleList.MainSwing1 -= 2.0f;
-			if (AngleList.MainSwing1 == -20.0f) {
+			if (AngleList.MainSwing1 == -20.0f) 
 				MainswingAngle1 = true;
-			}
-
 		}
 		if (MainswingAngle2 == true) {
 			AngleList.MainSwing2 += 2.0f;
-
-			if (AngleList.MainSwing2 == 20.0f) {
+			if (AngleList.MainSwing2 == 20.0f) 
 				MainswingAngle2 = false;
-			}
 		}
 		if (MainswingAngle2 == false) {
 			AngleList.MainSwing2 -= 2.0f;
-			if (AngleList.MainSwing2 == -20.0f) {
+			if (AngleList.MainSwing2 == -20.0f) 
 				MainswingAngle2 = true;
-			}
-
 		}
 	}
 
 	if (TrapAction == true)
 	{
-
 		AngleList.AngleTrap -= 5.0f;
-		for (int i = 0; i < 6; i++)
-		{
+		for (int i = 0; i < 6; i++) {
 			radomcorail[i].z -= 0.03f;
-
 			if (radomcorail[i].z + 16.0f < -6.0f)
-			{
 				radomcorail[i].z = 0.0f;
-			}
-
 		}
-
 	}
 
 	if (TransList.T_Bodyz >= 13.0f)
-	{
 		TrapHelyAction = true;
-	}
 	if (TrapHelyAction == true)
-	{
 		AngleList.AngleTrap2 += 60.23234f;
-	}
-
-
-	if (Opencheck == true)
-	{
-
-		if (Door == true)
-		{
-
+	if (Opencheck == true) {
+		if (Door == true) {
 			TransList.DoorxL += 0.01f;
 			TransList.DoorxR -= 0.01f;
 			Scalepos.Doorx -= 0.02f;
-			if (TransList.DoorxR <= -3.0f && TransList.DoorxL >= 3.0f)
-			{
+			if (TransList.DoorxR <= -3.0f && TransList.DoorxL >= 3.0f) {
 				TransList.DoorxL -= 0.01f;
 				TransList.DoorxR += 0.01f;
 				Scalepos.Doorx += 0.02f;
 				Door = false;
 			}
-
 		}
 
 
-		if (Door == false)
-		{
+		if (Door == false) {
 			TransList.DoorxL -= 0.01f;
 			TransList.DoorxR += 0.01f;
 			Scalepos.Doorx += 0.02f;
-			if (TransList.DoorxR >= -2.1f && TransList.DoorxL <= 2.1f)
-			{
+			if (TransList.DoorxR >= -2.1f && TransList.DoorxL <= 2.1f) {
 				TransList.DoorxL += 0.01f;
 				TransList.DoorxR -= 0.01f;
 				Scalepos.Doorx -= 0.02f;
 				Door = true;
 			}
-
 		}
 	}
 
-	if (PullTrapcheck == true)
-	{
-		//L
+	if (PullTrapcheck == true) {
 		if (PullTrapPoint == 0) {
 			PullTrapLx[0] -= 0.75;
 			Scalepos.PullScaleLx[0] = 6.0f;
@@ -599,29 +506,24 @@ void timer(int value)
 			if (PullTrapLx[2] <= -1.0f)
 				PullTrapPoint3 = 1;
 		}
-
 		if (PullTrapPoint == 1) {
 			PullTrapLx[0] += 0.04;
 			Scalepos.PullScaleLx[0] -= 0.02f;
 			if (PullTrapLx[0] >= 3.0f)
 				PullTrapPoint = 0;
 		}
-
 		if (PullTrapPoint2 == 1) {
 			PullTrapLx[1] += 0.04;
 			Scalepos.PullScaleLx[1] -= 0.02f;
 			if (PullTrapLx[1] >= 3.0f)
 				PullTrapPoint2 = 0;
 		}
-
 		if (PullTrapPoint3 == 1) {
 			PullTrapLx[2] += 0.04;
 			Scalepos.PullScaleLx[2] -= 0.02f;
 			if (PullTrapLx[2] >= 3.0f)
 				PullTrapPoint3 = 0;
 		}
-
-		//R
 		if (PullTrapPoint4 == 0) {
 			PullTrapRx[0] += 0.8;
 			Scalepos.PullScaleRx[0] = 7.0f;
@@ -640,21 +542,18 @@ void timer(int value)
 			if (PullTrapRx[2] >= -1.0f)
 				PullTrapPoint6 = 1;
 		}
-
 		if (PullTrapPoint4 == 1) {
 			PullTrapRx[0] -= 0.04;
 			Scalepos.PullScaleRx[0] -= 0.02f;
 			if (PullTrapRx[0] <= -3.0f)
 				PullTrapPoint4 = 0;
 		}
-
 		if (PullTrapPoint5 == 1) {
 			PullTrapRx[1] -= 0.04;
 			Scalepos.PullScaleRx[1] -= 0.02f;
 			if (PullTrapRx[1] <= -3.0f)
 				PullTrapPoint5 = 0;
 		}
-
 		if (PullTrapPoint6 == 1) {
 			PullTrapRx[2] -= 0.04;
 			Scalepos.PullScaleRx[2] -= 0.02f;
@@ -665,10 +564,8 @@ void timer(int value)
 
 	AngleList.Radian += 20.234f;
 
-	if (TransList.T_Bodyz >= TransList.T_StageZ - 6.0f && TransList.T_Bodyz <= TransList.T_StageZ + 13.0f)
-	{
-		if (TransList.T_Bodyx >= TransList.T_StageX + 5.0f || TransList.T_Bodyx <= TransList.T_StageX - 5.0f)
-		{
+	if (TransList.T_Bodyz >= TransList.T_StageZ - 6.0f && TransList.T_Bodyz <= TransList.T_StageZ + 13.0f) {
+		if (TransList.T_Bodyx >= TransList.T_StageX + 5.0f || TransList.T_Bodyx <= TransList.T_StageX - 5.0f) {
 			TransList.T_Bodyy -= 0.2f;
 			TransList.T_ArmLegy -= 0.2f;
 			TransList.T_Eyey -= 0.2f;
@@ -676,24 +573,22 @@ void timer(int value)
 	}
 
 	if (TransList.T_Bodyz >= TransList.T_Stage2ZA[0] && TransList.T_Bodyz <= TransList.T_Stage2Z + 76.0f) {
-		if (TransList.T_Bodyx >= TransList.T_Stage2X + 5.0f || TransList.T_Bodyx <= TransList.T_Stage2X - 5.0f)
-		{
+		if (TransList.T_Bodyx >= TransList.T_Stage2X + 5.0f || TransList.T_Bodyx <= TransList.T_Stage2X - 5.0f) {
 			TransList.T_Bodyy -= 0.2f;
 			TransList.T_ArmLegy -= 0.2f;
 			TransList.T_Eyey -= 0.2f;
 		}
 	}
 
-	for (int i = 0; i < 6; i++)
-	{
+	for (int i = 0; i < 6; i++) {
 		if (TransList.T_Bodyy >= IceLocationy[i].y && TransList.T_Bodyx <= IceLocationx[i] + 1.5f && TransList.T_Bodyx >= IceLocationx[i] - 1.5f
-			&& TransList.T_Bodyz >= IceLocationz[i] - 1.5f && TransList.T_Bodyz <= IceLocationz[i] + 1.5f)
-		{
+			&& TransList.T_Bodyz >= IceLocationz[i] - 1.5f && TransList.T_Bodyz <= IceLocationz[i] + 1.5f) {
 			TransList.T_Bodyy -= 0.5f;
 			TransList.T_ArmLegy -= 0.5f;
 			TransList.T_Eyey -= 0.5f;
 		}
 	}
+
 	glutPostRedisplay();
 	glutTimerFunc(17, timer, value);
 }
@@ -760,14 +655,11 @@ void MainView()
 	unsigned int ViewPositionLocation = glGetUniformLocation(shaderID, "camerapos");
 	glUniform3fv(ViewPositionLocation, 1, glm::value_ptr(CameraView));
 
-	//--------����
 	glm::mat4 Proj = glm::mat4(1.0f);
 	Proj = glm::perspective(glm::radians(60.0f), (float)FRAME_WIDTH / FRAME_HEIGHT, 0.1f, 100.0f);
 	unsigned int ModelProjLocation = glGetUniformLocation(shaderID, "projectionTransform");
 	glUniformMatrix4fv(ModelProjLocation, 1, GL_FALSE, &Proj[0][0]);
 
-
-	//--------����
 	glm::mat4 LightPosition = glm::mat4(1.0f);
 	LightPosition = glm::rotate(LightPosition, glm::radians(AngleList.LightRadian), glm::vec3(0.0f, 1.0f, 0.0f));
 	LightPosition = glm::translate(LightPosition, glm::vec3(Scalepos.X, Scalepos.Y, Scalepos.Z - 1.0f));
@@ -777,7 +669,6 @@ void MainView()
 	glUniform3fv(lightColorLocation, 1, glm::value_ptr(lightColor));
 	unsigned int LightTransformLocation = glGetUniformLocation(shaderID, "LightTransform");
 	glUniformMatrix4fv(LightTransformLocation, 1, GL_FALSE, glm::value_ptr(LightPosition));
-
 
 	drawscene();
 	glutSwapBuffers();
@@ -795,9 +686,7 @@ void keyboardCall(unsigned char key, int x, int y)
 		TransList.T_Bodyz += Movevalue;
 		TransList.T_ArmLegz += Movevalue;
 
-		if (TransList.T_Bodyz > TransList.T_StageZ + 70.0f && TransList.T_Bodyz < TransList.T_StageZ + 80.0f)
-		{
-
+		if (TransList.T_Bodyz > TransList.T_StageZ + 70.0f && TransList.T_Bodyz < TransList.T_StageZ + 80.0f) {
 			TransList.T_Eyez += Movevalue;
 			TransList.T_Bodyz += Movevalue;
 			TransList.T_ArmLegz += Movevalue;
@@ -815,9 +704,7 @@ void keyboardCall(unsigned char key, int x, int y)
 		TransList.T_Bodyz -= Movevalue;
 		TransList.T_ArmLegz -= Movevalue;
 		TransList.T_Cpaez -= Movevalue;
-		if (TransList.T_Bodyz > TransList.T_StageZ + 70.0f && TransList.T_Bodyz < TransList.T_StageZ + 80.0f)
-		{
-
+		if (TransList.T_Bodyz > TransList.T_StageZ + 70.0f && TransList.T_Bodyz < TransList.T_StageZ + 80.0f) {
 			TransList.T_Eyez -= Movevalue;
 			TransList.T_Bodyz -= Movevalue;
 			TransList.T_ArmLegz -= Movevalue;
@@ -878,8 +765,7 @@ void InitBuffer()
 {
 	glGenVertexArrays(26, VAO);
 
-	for (int i = 0; i < 26; i++)
-	{
+	for (int i = 0; i < 26; i++) {
 		glBindVertexArray(VAO[i]);
 
 		glGenBuffers(3, &VBO[3 * i]);
@@ -933,8 +819,7 @@ void drawscene()
 {
 	glUseProgram(shaderID);
 
-	for (int i = 0; i < 200; i++)
-	{
+	for (int i = 0; i < 200; i++) {
 		glBindVertexArray(VAO[3]);
 		unsigned int snowBlendCheck = glGetUniformLocation(shaderID, "Blendcheck");
 		glUniform1i(snowBlendCheck, 2);
@@ -955,8 +840,7 @@ void drawscene()
 	}
 
 
-	for (int i = 0; i < 80; i++)
-	{
+	for (int i = 0; i < 80; i++) {
 		glBindVertexArray(VAO[23]);
 		unsigned int StarBlendCheck = glGetUniformLocation(shaderID, "Blendcheck");
 		glUniform1i(StarBlendCheck, 2);
@@ -976,8 +860,7 @@ void drawscene()
 		glDrawArrays(GL_TRIANGLES, 0, Vertex[23].size());
 	}
 
-	for (int i = 0; i < 6; i++)
-	{
+	for (int i = 0; i < 6; i++) {
 		glBindVertexArray(VAO[24]);
 		unsigned int ICEBlendCheck = glGetUniformLocation(shaderID, "Blendcheck");
 		glUniform1i(ICEBlendCheck, 2);
@@ -1066,8 +949,7 @@ void drawscene()
 		glDrawArrays(GL_TRIANGLES, 0, Vertex[16].size());
 
 		if ((TransList.DoorxR + 2.0f >= TransList.T_Bodyx && (TransList.T_StageZ + 32.0f) - 1.0f <= TransList.T_Bodyz && (TransList.T_StageZ + 32.0f) + 1.0f >= TransList.T_Bodyz)
-			|| (TransList.DoorxL - 2.0f <= TransList.T_Bodyx && (TransList.T_StageZ + 32.0f) - 1.0f <= TransList.T_Bodyz && (TransList.T_StageZ + 32.0f) + 1.0f >= TransList.T_Bodyz))
-		{
+			|| (TransList.DoorxL - 2.0f <= TransList.T_Bodyx && (TransList.T_StageZ + 32.0f) - 1.0f <= TransList.T_Bodyz && (TransList.T_StageZ + 32.0f) + 1.0f >= TransList.T_Bodyz)) {
 			TransList.T_Bodyz -= 0.05f;
 			TransList.T_ArmLegz -= 0.05f;
 			TransList.T_Eyez -= 0.05f;
@@ -1080,8 +962,7 @@ void drawscene()
 	{
 
 		glBindVertexArray(VAO[4]);
-		for (size_t i = 0; i < 3; i++)
-		{
+		for (size_t i = 0; i < 3; i++) {
 			unsigned int StageBlendCheck = glGetUniformLocation(shaderID, "Blendcheck");
 			glUniform1i(StageBlendCheck, 2);
 			glActiveTexture(GL_TEXTURE0);
@@ -1415,8 +1296,7 @@ void drawscene()
 		unsigned int HELYCOPROWNormalLocation = glGetUniformLocation(shaderID, "normalTransform");
 		glUniformMatrix4fv(HELYCOPROWNormalLocation, 1, GL_FALSE, glm::value_ptr(HELYCOPROWNormal));
 		glDrawArrays(GL_TRIANGLES, 0, Vertex[14].size());
-		if (TransList.T_Bodyx >= HelyTrapx[i] - 2.5f && TransList.T_Bodyx <= HelyTrapx[i] + 0.5f && HelyTrapz[i] - 1.0 <= TransList.T_Bodyz && HelyTrapz[i] + 1.0 >= TransList.T_Bodyz)
-		{
+		if (TransList.T_Bodyx >= HelyTrapx[i] - 2.5f && TransList.T_Bodyx <= HelyTrapx[i] + 0.5f && HelyTrapz[i] - 1.0 <= TransList.T_Bodyz && HelyTrapz[i] + 1.0 >= TransList.T_Bodyz) {
 			TransList.T_Bodyx -= 0.05f;
 			TransList.T_ArmLegx -= 0.05f;
 			TransList.T_Eyex -= 0.05f;
@@ -1459,14 +1339,12 @@ void drawscene()
 		glUniformMatrix4fv(PullTrap2NormalMatrixLocation, 1, GL_FALSE, glm::value_ptr(PullTrap2NormalMatrix));
 		glDrawArrays(GL_TRIANGLES, 0, Vertex[22].size());
 
-		if (PullTrapRx[i] + 4.0f >= TransList.T_Bodyx && PullTrapRz[i] - 0.5f <= TransList.T_Bodyz && PullTrapRz[i] + 0.5f >= TransList.T_Bodyz)
-		{
+		if (PullTrapRx[i] + 4.0f >= TransList.T_Bodyx && PullTrapRz[i] - 0.5f <= TransList.T_Bodyz && PullTrapRz[i] + 0.5f >= TransList.T_Bodyz) {
 			TransList.T_Bodyx += 1.5f;
 			TransList.T_ArmLegx += 1.5f;
 			TransList.T_Eyex += 1.5f;
 		}
-		if (PullTrapLx[i] - 4.0f <= TransList.T_Bodyx && PullTrapLz[i] - 0.5f <= TransList.T_Bodyz && PullTrapLz[i] + 0.5f >= TransList.T_Bodyz)
-		{
+		if (PullTrapLx[i] - 4.0f <= TransList.T_Bodyx && PullTrapLz[i] - 0.5f <= TransList.T_Bodyz && PullTrapLz[i] + 0.5f >= TransList.T_Bodyz) {
 			TransList.T_Bodyx -= 1.5f;
 			TransList.T_ArmLegx -= 1.5f;
 			TransList.T_Eyex -= 1.5f;
@@ -1477,8 +1355,7 @@ void drawscene()
 
 	//---potal
 	glBindVertexArray(VAO[17]);
-	for (size_t i = 0; i < 2; i++)
-	{
+	for (size_t i = 0; i < 2; i++) {
 		unsigned int FlagBlendCheck = glGetUniformLocation(shaderID, "Blendcheck");
 		glUniform1i(FlagBlendCheck, 2);
 		glActiveTexture(GL_TEXTURE0);
@@ -1496,8 +1373,7 @@ void drawscene()
 		glDrawArrays(GL_TRIANGLES, 0, Vertex[17].size());
 
 		if (TransList.T_Bodyz >= (TransList.T_StageZ + 21.0f) - 0.5f && TransList.T_Bodyz <= (TransList.T_StageZ + 21.0f) + 0.5f
-			&& TransList.T_Bodyx >= (TransList.T_StageX + 28.0f) - 0.5f && TransList.T_Bodyx <= (TransList.T_StageX + 28.0f) + 0.5f)
-		{
+			&& TransList.T_Bodyx >= (TransList.T_StageX + 28.0f) - 0.5f && TransList.T_Bodyx <= (TransList.T_StageX + 28.0f) + 0.5f) {
 			TransList.T_Bodyx = Potalx[1];
 			TransList.T_ArmLegx = Potalx[1];
 			TransList.T_Eyex = Potalx[1];

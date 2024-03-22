@@ -396,7 +396,7 @@ int main(int argc, char** argv)
 		cerr << "fail Initialize" << endl;
 	else cout << "Initialize" << endl;
 	ReadObj();
-	makeShader(vn,fn,shaderID);
+	makeShader(vn,fn,shaderID[0]);
 	initbuffer();
 	glutDisplayFunc(ViewPort);
 	glutKeyboardFunc(keyboard);
